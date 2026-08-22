@@ -1,0 +1,4165 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* =========================================================
+   BLUEGUARD GLOBAL STYLES
+   ========================================================= */
+
+:root {
+  font-family:
+    Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont,
+    "Segoe UI", sans-serif;
+
+  color: #e8f7f1;
+  background: #061412;
+
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+  background: #061412;
+}
+
+button,
+a {
+  font: inherit;
+}
+
+button {
+  cursor: pointer;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+/* =========================================================
+   MAIN PAGE
+   ========================================================= */
+
+.blueguard-page {
+  position: relative;
+  min-height: 100vh;
+  overflow-x: hidden;
+  background:
+    radial-gradient(
+      circle at 75% 10%,
+      rgba(25, 111, 91, 0.16),
+      transparent 27%
+    ),
+    radial-gradient(
+      circle at 10% 40%,
+      rgba(10, 81, 75, 0.12),
+      transparent 25%
+    ),
+    #061412;
+}
+
+/* =========================================================
+   BACKGROUND ORBS
+   ========================================================= */
+
+.background-orb {
+  position: absolute;
+  border-radius: 50%;
+  pointer-events: none;
+  filter: blur(90px);
+  opacity: 0.28;
+}
+
+.background-orb-one {
+  width: 350px;
+  height: 350px;
+  top: 150px;
+  right: -150px;
+  background: #0c8068;
+}
+
+.background-orb-two {
+  width: 300px;
+  height: 300px;
+  top: 650px;
+  left: -180px;
+  background: #075c63;
+}
+
+/* =========================================================
+   NAVBAR
+   ========================================================= */
+
+.landing-navbar {
+  position: fixed;
+  z-index: 1000;
+
+  top: 20px;
+  left: 50%;
+
+  width: min(1180px, calc(100% - 32px));
+
+  transform: translateX(-50%);
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  min-height: 66px;
+  padding: 8px 9px 8px 20px;
+
+  border: 1px solid rgba(255, 255, 255, 0.11);
+  border-radius: 999px;
+
+  background: rgba(8, 30, 26, 0.56);
+
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+
+  box-shadow:
+    0 12px 40px rgba(0, 0, 0, 0.22),
+    inset 0 1px 0 rgba(255, 255, 255, 0.05);
+
+  transition:
+    background 0.25s ease,
+    box-shadow 0.25s ease,
+    border-color 0.25s ease;
+}
+
+.landing-navbar-scrolled {
+  background: rgba(6, 25, 22, 0.82);
+
+  border-color: rgba(77, 214, 171, 0.18);
+
+  box-shadow:
+    0 15px 45px rgba(0, 0, 0, 0.32),
+    inset 0 1px 0 rgba(255, 255, 255, 0.06);
+}
+
+.navbar-logo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+
+  color: #f1fff9;
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: -0.4px;
+}
+
+.logo-mark {
+  width: 37px;
+  height: 37px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border: 1px solid rgba(93, 227, 183, 0.3);
+  border-radius: 50%;
+
+  color: #6de6bb;
+
+  background:
+    radial-gradient(
+      circle at 30% 20%,
+      rgba(104, 237, 192, 0.2),
+      transparent 55%
+    ),
+    rgba(28, 105, 84, 0.3);
+}
+
+.desktop-nav {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.desktop-nav button {
+  padding: 9px 15px;
+
+  border: 0;
+  border-radius: 999px;
+
+  color: rgba(230, 246, 240, 0.68);
+  background: transparent;
+
+  font-size: 13px;
+  font-weight: 500;
+
+  transition:
+    color 0.2s ease,
+    background 0.2s ease;
+}
+
+.desktop-nav button:hover {
+  color: #eafff7;
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.navbar-actions {
+  display: flex;
+  align-items: center;
+}
+
+.navbar-login {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+
+  padding: 11px 17px;
+
+  border: 1px solid rgba(110, 231, 183, 0.22);
+  border-radius: 999px;
+
+  color: #062119;
+
+  background: #6de6bb;
+
+  font-size: 13px;
+  font-weight: 700;
+
+  transition:
+    transform 0.2s ease,
+    background 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.navbar-login:hover {
+  transform: translateY(-1px);
+
+  background: #82efc7;
+
+  box-shadow: 0 7px 25px rgba(75, 216, 168, 0.22);
+}
+
+.mobile-menu-button {
+  display: none;
+
+  width: 42px;
+  height: 42px;
+
+  align-items: center;
+  justify-content: center;
+
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 50%;
+
+  color: #eafff7;
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.mobile-nav {
+  display: none;
+}
+
+/* =========================================================
+   HERO
+   ========================================================= */
+
+.hero-section {
+  position: relative;
+
+  max-width: 1240px;
+  min-height: 850px;
+
+  margin: 0 auto;
+  padding: 190px 32px 110px;
+
+  display: grid;
+  grid-template-columns: 1.02fr 0.98fr;
+  align-items: center;
+  gap: 55px;
+}
+
+.hero-content {
+  position: relative;
+  z-index: 2;
+}
+
+.hero-badge {
+  width: fit-content;
+
+  display: flex;
+  align-items: center;
+  gap: 9px;
+
+  margin-bottom: 25px;
+  padding: 8px 13px;
+
+  border: 1px solid rgba(96, 223, 181, 0.17);
+  border-radius: 999px;
+
+  color: rgba(205, 238, 226, 0.78);
+
+  background: rgba(37, 116, 94, 0.13);
+
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.15px;
+}
+
+.status-dot {
+  width: 7px;
+  height: 7px;
+
+  border-radius: 50%;
+
+  background: #63e6b6;
+
+  box-shadow: 0 0 12px rgba(99, 230, 182, 0.8);
+}
+
+.hero-content h1 {
+  max-width: 720px;
+
+  margin: 0;
+
+  color: #effff8;
+
+  font-size: clamp(54px, 6.5vw, 86px);
+  line-height: 0.98;
+  letter-spacing: -5px;
+  font-weight: 750;
+}
+
+.hero-content h1 span,
+.section-heading h2 span,
+.about-content h2 span {
+  display: block;
+
+  color: #62dfb1;
+
+  background: linear-gradient(100deg, #6de7ba, #31b99a);
+
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.hero-description {
+  max-width: 590px;
+
+  margin: 30px 0 0;
+
+  color: rgba(213, 236, 227, 0.67);
+
+  font-size: 17px;
+  line-height: 1.75;
+}
+
+.hero-buttons {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+
+  margin-top: 34px;
+}
+
+.primary-button,
+.secondary-button,
+.outline-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+
+  min-height: 49px;
+  padding: 0 20px;
+
+  border-radius: 999px;
+
+  font-size: 13px;
+  font-weight: 700;
+
+  transition:
+    transform 0.2s ease,
+    background 0.2s ease,
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.primary-button {
+  border: 1px solid #70e8bb;
+
+  color: #052119;
+
+  background: #6de5b9;
+}
+
+.primary-button:hover {
+  transform: translateY(-2px);
+
+  background: #84edc7;
+
+  box-shadow: 0 12px 35px rgba(72, 218, 168, 0.2);
+}
+
+.secondary-button {
+  border: 1px solid rgba(255, 255, 255, 0.13);
+
+  color: rgba(237, 250, 245, 0.83);
+
+  background: rgba(255, 255, 255, 0.045);
+}
+
+.secondary-button:hover {
+  transform: translateY(-2px);
+
+  border-color: rgba(110, 230, 184, 0.3);
+
+  background: rgba(255, 255, 255, 0.075);
+}
+
+.hero-trust {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+
+  margin-top: 42px;
+}
+
+.trust-avatars {
+  display: flex;
+  align-items: center;
+}
+
+.trust-avatar {
+  width: 31px;
+  height: 31px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  margin-left: -6px;
+
+  border: 2px solid #061412;
+  border-radius: 50%;
+
+  color: #7debc3;
+
+  background: #123d34;
+}
+
+.trust-avatar:first-child {
+  margin-left: 0;
+}
+
+.hero-trust strong,
+.hero-trust span {
+  display: block;
+}
+
+.hero-trust strong {
+  margin-bottom: 2px;
+
+  color: rgba(237, 250, 245, 0.85);
+
+  font-size: 11px;
+}
+
+.hero-trust span {
+  color: rgba(196, 225, 214, 0.48);
+
+  font-size: 11px;
+}
+
+/* =========================================================
+   HERO VISUAL
+   ========================================================= */
+
+.hero-visual {
+  position: relative;
+
+  min-height: 530px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.hero-glow {
+  position: absolute;
+
+  width: 370px;
+  height: 370px;
+
+  border-radius: 50%;
+
+  background: rgba(25, 161, 127, 0.12);
+
+  filter: blur(75px);
+}
+
+.ecosystem-card {
+  position: relative;
+  z-index: 2;
+
+  width: min(100%, 490px);
+
+  padding: 20px;
+
+  border: 1px solid rgba(167, 239, 215, 0.12);
+  border-radius: 27px;
+
+  background:
+    linear-gradient(
+      145deg,
+      rgba(29, 74, 62, 0.55),
+      rgba(8, 31, 27, 0.7)
+    );
+
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+
+  box-shadow:
+    0 30px 80px rgba(0, 0, 0, 0.35),
+    inset 0 1px 0 rgba(255, 255, 255, 0.05);
+}
+
+.ecosystem-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.small-label {
+  display: block;
+
+  margin-bottom: 5px;
+
+  color: #5bd9ad;
+
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 1.6px;
+}
+
+.ecosystem-header h3 {
+  margin: 0;
+
+  color: #e9fff7;
+
+  font-size: 17px;
+  font-weight: 650;
+}
+
+.live-indicator {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+
+  padding: 6px 9px;
+
+  border: 1px solid rgba(91, 222, 175, 0.13);
+  border-radius: 999px;
+
+  color: #67deb1;
+
+  background: rgba(77, 205, 162, 0.08);
+
+  font-size: 10px;
+  font-weight: 600;
+}
+
+.live-indicator span {
+  width: 6px;
+  height: 6px;
+
+  border-radius: 50%;
+
+  background: #65e5b5;
+
+  box-shadow: 0 0 8px rgba(101, 229, 181, 0.8);
+}
+
+.ecosystem-map {
+  position: relative;
+
+  height: 325px;
+
+  margin-top: 18px;
+
+  overflow: hidden;
+
+  border: 1px solid rgba(122, 223, 193, 0.08);
+  border-radius: 20px;
+
+  background:
+    radial-gradient(
+      circle at 50% 50%,
+      rgba(32, 141, 111, 0.14),
+      transparent 33%
+    ),
+    #09231f;
+}
+
+.map-grid {
+  position: absolute;
+  inset: 0;
+
+  opacity: 0.35;
+
+  background-image:
+    linear-gradient(rgba(105, 217, 183, 0.07) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(105, 217, 183, 0.07) 1px, transparent 1px);
+
+  background-size: 40px 40px;
+}
+
+.map-line {
+  position: absolute;
+
+  height: 1px;
+
+  transform-origin: left center;
+
+  background: linear-gradient(
+    90deg,
+    rgba(83, 222, 178, 0.6),
+    rgba(83, 222, 178, 0)
+  );
+}
+
+.map-line-one {
+  width: 220px;
+  left: 22%;
+  top: 36%;
+  transform: rotate(22deg);
+}
+
+.map-line-two {
+  width: 190px;
+  left: 43%;
+  top: 50%;
+  transform: rotate(-35deg);
+}
+
+.map-line-three {
+  width: 170px;
+  left: 27%;
+  top: 65%;
+  transform: rotate(-8deg);
+}
+
+.map-node {
+  position: absolute;
+
+  width: 10px;
+  height: 10px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 50%;
+
+  background: #62e0b3;
+
+  box-shadow:
+    0 0 0 6px rgba(98, 224, 179, 0.08),
+    0 0 18px rgba(98, 224, 179, 0.5);
+}
+
+.map-node span {
+  width: 4px;
+  height: 4px;
+
+  border-radius: 50%;
+
+  background: #eafff7;
+}
+
+.node-one {
+  top: 30%;
+  left: 23%;
+}
+
+.node-two {
+  top: 49%;
+  left: 48%;
+}
+
+.node-three {
+  top: 68%;
+  left: 30%;
+}
+
+.node-four {
+  top: 37%;
+  right: 22%;
+}
+
+.map-center {
+  position: absolute;
+
+  top: 50%;
+  left: 50%;
+
+  width: 65px;
+  height: 65px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  transform: translate(-50%, -50%);
+
+  border: 1px solid rgba(110, 234, 188, 0.35);
+  border-radius: 50%;
+
+  color: #7aebc3;
+
+  background: rgba(42, 139, 111, 0.25);
+
+  box-shadow:
+    0 0 0 15px rgba(76, 213, 168, 0.04),
+    0 0 35px rgba(76, 213, 168, 0.14);
+}
+
+.ecosystem-stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+
+  margin-top: 15px;
+}
+
+.ecosystem-stats div {
+  padding: 4px 15px;
+
+  border-right: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.ecosystem-stats div:last-child {
+  border-right: 0;
+}
+
+.ecosystem-stats span,
+.ecosystem-stats strong {
+  display: block;
+}
+
+.ecosystem-stats span {
+  margin-bottom: 3px;
+
+  color: rgba(198, 225, 215, 0.43);
+
+  font-size: 9px;
+}
+
+.ecosystem-stats strong {
+  color: #e5fff6;
+
+  font-size: 17px;
+}
+
+.floating-card {
+  position: absolute;
+  z-index: 4;
+
+  display: flex;
+  align-items: center;
+  gap: 10px;
+
+  padding: 11px 13px;
+
+  border: 1px solid rgba(154, 237, 211, 0.13);
+  border-radius: 14px;
+
+  background: rgba(11, 39, 33, 0.76);
+
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.25);
+}
+
+.verification-card {
+  top: 105px;
+  right: -15px;
+}
+
+.monitoring-card {
+  bottom: 105px;
+  left: -18px;
+}
+
+.floating-icon {
+  width: 33px;
+  height: 33px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 10px;
+}
+
+.verified-icon {
+  color: #67e1b3;
+  background: rgba(74, 211, 164, 0.1);
+}
+
+.monitoring-icon {
+  color: #6ccfd1;
+  background: rgba(79, 190, 195, 0.1);
+}
+
+.floating-card span,
+.floating-card strong {
+  display: block;
+}
+
+.floating-card span {
+  margin-bottom: 2px;
+
+  color: rgba(201, 229, 218, 0.43);
+
+  font-size: 9px;
+}
+
+.floating-card strong {
+  color: #eafff7;
+
+  font-size: 11px;
+}
+
+/* =========================================================
+   TRUST STRIP
+   ========================================================= */
+
+.trust-strip {
+  max-width: 1080px;
+
+  margin: 0 auto;
+
+  padding: 25px 30px;
+
+  display: grid;
+  grid-template-columns: 1fr auto 1fr auto 1fr;
+  align-items: center;
+  gap: 28px;
+
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.trust-strip-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.trust-strip-item > svg {
+  color: #5dddb0;
+}
+
+.trust-strip-item strong,
+.trust-strip-item span {
+  display: block;
+}
+
+.trust-strip-item strong {
+  margin-bottom: 2px;
+
+  color: rgba(235, 250, 244, 0.85);
+
+  font-size: 11px;
+}
+
+.trust-strip-item span {
+  color: rgba(196, 224, 214, 0.42);
+
+  font-size: 9px;
+}
+
+.trust-strip-divider {
+  width: 1px;
+  height: 30px;
+
+  background: rgba(255, 255, 255, 0.08);
+}
+
+/* =========================================================
+   GENERIC SECTIONS
+   ========================================================= */
+
+.content-section {
+  max-width: 1180px;
+
+  margin: 0 auto;
+
+  padding: 130px 32px;
+}
+
+.section-heading {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+
+  gap: 50px;
+
+  margin-bottom: 48px;
+}
+
+.section-heading > div {
+  max-width: 650px;
+}
+
+.section-eyebrow {
+  display: block;
+
+  margin-bottom: 13px;
+
+  color: #57d9aa;
+
+  font-size: 10px;
+  font-weight: 750;
+  letter-spacing: 2px;
+}
+
+.section-heading h2,
+.about-content h2 {
+  margin: 0;
+
+  color: #edfff7;
+
+  font-size: clamp(38px, 4.3vw, 57px);
+  line-height: 1.05;
+  letter-spacing: -2.8px;
+  font-weight: 720;
+}
+
+.section-heading > p {
+  max-width: 340px;
+
+  margin: 0;
+
+  color: rgba(204, 231, 220, 0.52);
+
+  font-size: 13px;
+  line-height: 1.7;
+}
+
+.centered {
+  display: block;
+
+  max-width: 650px;
+
+  margin: 0 auto 55px;
+
+  text-align: center;
+}
+
+.centered p {
+  max-width: 530px;
+
+  margin: 20px auto 0;
+}
+
+/* =========================================================
+   PROJECTS
+   ========================================================= */
+
+.projects-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 18px;
+}
+
+.project-card {
+  overflow: hidden;
+
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 20px;
+
+  background: rgba(12, 36, 31, 0.58);
+
+  transition:
+    transform 0.25s ease,
+    border-color 0.25s ease,
+    background 0.25s ease;
+}
+
+.project-card:hover {
+  transform: translateY(-5px);
+
+  border-color: rgba(94, 220, 177, 0.18);
+
+  background: rgba(15, 46, 39, 0.72);
+}
+
+.project-image {
+  position: relative;
+
+  height: 205px;
+
+  overflow: hidden;
+
+  background-size: cover;
+  background-position: center;
+}
+
+.project-image-1 {
+  background:
+    linear-gradient(
+      180deg,
+      rgba(3, 20, 17, 0.05),
+      rgba(3, 20, 17, 0.6)
+    ),
+    radial-gradient(circle at 30% 30%, #38775f, #09251f 65%);
+}
+
+.project-image-2 {
+  background:
+    linear-gradient(
+      180deg,
+      rgba(3, 20, 17, 0.05),
+      rgba(3, 20, 17, 0.6)
+    ),
+    radial-gradient(circle at 70% 25%, #287b73, #09231f 65%);
+}
+
+.project-image-3 {
+  background:
+    linear-gradient(
+      180deg,
+      rgba(3, 20, 17, 0.05),
+      rgba(3, 20, 17, 0.6)
+    ),
+    radial-gradient(circle at 50% 30%, #426d55, #09221e 65%);
+}
+
+.project-image-overlay {
+  position: absolute;
+  inset: 0;
+
+  background:
+    linear-gradient(
+      180deg,
+      rgba(4, 21, 18, 0.05),
+      rgba(4, 21, 18, 0.35)
+    );
+}
+
+.project-type,
+.verified-badge {
+  position: absolute;
+  top: 14px;
+
+  display: flex;
+  align-items: center;
+  gap: 5px;
+
+  padding: 7px 9px;
+
+  border-radius: 999px;
+
+  font-size: 9px;
+  font-weight: 650;
+}
+
+.project-type {
+  left: 14px;
+
+  color: rgba(235, 250, 244, 0.8);
+
+  background: rgba(4, 23, 19, 0.52);
+
+  backdrop-filter: blur(10px);
+}
+
+.verified-badge {
+  right: 14px;
+
+  color: #082319;
+
+  background: #6be2b6;
+}
+
+.project-card-content {
+  padding: 19px;
+}
+
+.project-location {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+
+  margin-bottom: 9px;
+
+  color: rgba(193, 222, 211, 0.42);
+
+  font-size: 9px;
+}
+
+.project-card h3 {
+  margin: 0 0 22px;
+
+  color: #eafff6;
+
+  font-size: 18px;
+  font-weight: 650;
+  letter-spacing: -0.4px;
+}
+
+.project-progress-header {
+  display: flex;
+  justify-content: space-between;
+
+  margin-bottom: 7px;
+}
+
+.project-progress-header span {
+  color: rgba(200, 227, 216, 0.45);
+
+  font-size: 9px;
+}
+
+.project-progress-header strong {
+  color: #69dfb5;
+
+  font-size: 9px;
+}
+
+.progress-track {
+  height: 5px;
+
+  overflow: hidden;
+
+  border-radius: 999px;
+
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.progress-fill {
+  height: 100%;
+
+  border-radius: inherit;
+
+  background: linear-gradient(90deg, #299d7e, #6de5b9);
+}
+
+.project-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  margin-top: 18px;
+  padding-top: 14px;
+
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.project-footer span {
+  color: rgba(194, 222, 211, 0.38);
+
+  font-size: 8px;
+}
+
+.project-footer strong {
+  color: rgba(230, 249, 241, 0.78);
+
+  font-size: 10px;
+}
+
+.section-button-wrapper {
+  display: flex;
+  justify-content: center;
+
+  margin-top: 35px;
+}
+
+.outline-button {
+  border: 1px solid rgba(98, 220, 177, 0.18);
+
+  color: #6de1b5;
+
+  background: rgba(65, 180, 143, 0.05);
+}
+
+.outline-button:hover {
+  transform: translateY(-2px);
+
+  background: rgba(65, 180, 143, 0.1);
+
+  border-color: rgba(98, 220, 177, 0.3);
+}
+
+/* =========================================================
+   HOW IT WORKS
+   ========================================================= */
+
+.process-section {
+  position: relative;
+}
+
+.steps-container {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr auto 1fr;
+  align-items: center;
+
+  gap: 14px;
+}
+
+.step-card {
+  min-height: 240px;
+
+  padding: 25px;
+
+  border: 1px solid rgba(255, 255, 255, 0.075);
+  border-radius: 20px;
+
+  background: rgba(12, 35, 30, 0.5);
+
+  transition:
+    transform 0.2s ease,
+    border-color 0.2s ease;
+}
+
+.step-card:hover {
+  transform: translateY(-4px);
+
+  border-color: rgba(95, 220, 176, 0.17);
+}
+
+.step-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.step-top > span {
+  color: rgba(102, 222, 178, 0.5);
+
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.step-icon {
+  width: 45px;
+  height: 45px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border: 1px solid rgba(91, 221, 176, 0.12);
+  border-radius: 13px;
+
+  color: #68dfb5;
+
+  background: rgba(68, 194, 151, 0.08);
+}
+
+.step-card h3 {
+  margin: 38px 0 9px;
+
+  color: #eafff7;
+
+  font-size: 20px;
+}
+
+.step-card p {
+  margin: 0;
+
+  color: rgba(201, 227, 217, 0.45);
+
+  font-size: 11px;
+  line-height: 1.75;
+}
+
+.step-connector {
+  width: 34px;
+  height: 34px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border: 1px solid rgba(95, 219, 175, 0.12);
+  border-radius: 50%;
+
+  color: rgba(96, 218, 174, 0.65);
+
+  background: rgba(65, 180, 143, 0.05);
+}
+
+/* =========================================================
+   ABOUT
+   ========================================================= */
+
+.about-section {
+  display: grid;
+  grid-template-columns: 0.9fr 1.1fr;
+  align-items: center;
+  gap: 100px;
+}
+
+.about-visual {
+  position: relative;
+
+  min-height: 410px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.about-circle {
+  position: absolute;
+
+  border-radius: 50%;
+
+  border: 1px solid rgba(90, 218, 175, 0.11);
+}
+
+.circle-one {
+  width: 300px;
+  height: 300px;
+}
+
+.circle-two {
+  width: 215px;
+  height: 215px;
+
+  border-color: rgba(90, 218, 175, 0.18);
+}
+
+.about-core {
+  position: relative;
+  z-index: 2;
+
+  width: 145px;
+  height: 145px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+
+  border: 1px solid rgba(103, 229, 184, 0.25);
+  border-radius: 50%;
+
+  color: #6de3b8;
+
+  background:
+    radial-gradient(
+      circle,
+      rgba(42, 146, 112, 0.25),
+      rgba(8, 31, 27, 0.85)
+    );
+
+  box-shadow:
+    0 0 60px rgba(56, 196, 148, 0.1),
+    inset 0 0 30px rgba(59, 201, 155, 0.06);
+}
+
+.about-core span {
+  margin-top: 9px;
+
+  color: #dffbf0;
+
+  font-size: 10px;
+  font-weight: 750;
+  letter-spacing: 1.5px;
+}
+
+.about-core small {
+  margin-top: 4px;
+
+  color: rgba(193, 224, 211, 0.4);
+
+  font-size: 7px;
+}
+
+.about-floating {
+  position: absolute;
+
+  display: flex;
+  align-items: center;
+  gap: 7px;
+
+  padding: 9px 12px;
+
+  border: 1px solid rgba(112, 229, 187, 0.13);
+  border-radius: 999px;
+
+  color: rgba(220, 247, 237, 0.7);
+
+  background: rgba(10, 36, 31, 0.72);
+
+  backdrop-filter: blur(14px);
+
+  font-size: 9px;
+  font-weight: 600;
+}
+
+.about-floating svg {
+  color: #67dfb5;
+}
+
+.about-floating-one {
+  top: 60px;
+  right: 15px;
+}
+
+.about-floating-two {
+  bottom: 65px;
+  left: 5px;
+}
+
+.about-content > p {
+  max-width: 570px;
+
+  margin: 23px 0 0;
+
+  color: rgba(203, 230, 219, 0.5);
+
+  font-size: 13px;
+  line-height: 1.8;
+}
+
+.about-points {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+
+  margin-top: 27px;
+}
+
+.about-points div {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+
+  color: rgba(221, 244, 235, 0.65);
+
+  font-size: 10px;
+}
+
+.about-points svg {
+  flex-shrink: 0;
+
+  color: #61ddb0;
+}
+
+.about-button {
+  margin-top: 31px;
+}
+
+/* =========================================================
+   FOOTER
+   ========================================================= */
+
+.landing-footer {
+  max-width: 1180px;
+
+  margin: 0 auto;
+
+  padding: 35px 32px 45px;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.footer-brand p {
+  margin: 8px 0 0;
+
+  color: rgba(191, 221, 210, 0.38);
+
+  font-size: 9px;
+}
+
+.footer-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+
+  color: rgba(190, 220, 209, 0.32);
+
+  font-size: 9px;
+}
+
+.footer-dot {
+  width: 3px;
+  height: 3px;
+
+  border-radius: 50%;
+
+  background: rgba(108, 226, 182, 0.45);
+}
+
+/* =========================================================
+   RESPONSIVE
+   ========================================================= */
+
+@media (max-width: 1000px) {
+  .desktop-nav {
+    display: none;
+  }
+
+  .mobile-menu-button {
+    display: flex;
+  }
+
+  .navbar-login {
+    display: none;
+  }
+
+  .landing-navbar {
+    border-radius: 22px;
+  }
+
+  .mobile-nav {
+    position: absolute;
+
+    top: calc(100% + 10px);
+    left: 0;
+    right: 0;
+
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+
+    padding: 10px;
+
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 20px;
+
+    background: rgba(7, 28, 24, 0.94);
+
+    backdrop-filter: blur(25px);
+    -webkit-backdrop-filter: blur(25px);
+
+    box-shadow: 0 20px 45px rgba(0, 0, 0, 0.3);
+  }
+
+  .mobile-nav button,
+  .mobile-nav a {
+    width: 100%;
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    padding: 13px 14px;
+
+    border: 0;
+    border-radius: 12px;
+
+    color: rgba(224, 244, 236, 0.7);
+
+    background: transparent;
+
+    font-size: 13px;
+
+    text-align: left;
+  }
+
+  .mobile-nav button:hover,
+  .mobile-nav a:hover {
+    color: #eafff7;
+    background: rgba(255, 255, 255, 0.05);
+  }
+
+  .hero-section {
+    grid-template-columns: 1fr;
+
+    padding-top: 150px;
+
+    text-align: center;
+  }
+
+  .hero-content {
+    display: flex;
+    align-items: center;
+    flex-direction: column;
+  }
+
+  .hero-description {
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  .hero-visual {
+    min-height: 480px;
+  }
+
+  .hero-trust {
+    text-align: left;
+  }
+
+  .projects-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .projects-grid .project-card:last-child {
+    grid-column: 1 / -1;
+
+    max-width: 50%;
+
+    margin: 0 auto;
+  }
+
+  .about-section {
+    grid-template-columns: 1fr;
+
+    gap: 40px;
+  }
+
+  .about-visual {
+    min-height: 350px;
+  }
+}
+
+@media (max-width: 700px) {
+  .landing-navbar {
+    top: 12px;
+
+    width: calc(100% - 24px);
+
+    padding-left: 14px;
+  }
+
+  .hero-section {
+    padding: 125px 20px 80px;
+  }
+
+  .hero-content h1 {
+    font-size: clamp(48px, 14vw, 68px);
+
+    letter-spacing: -3.5px;
+  }
+
+  .hero-description {
+    font-size: 14px;
+    line-height: 1.65;
+  }
+
+  .hero-buttons {
+    width: 100%;
+
+    flex-direction: column;
+  }
+
+  .hero-buttons a,
+  .hero-buttons button {
+    width: 100%;
+  }
+
+  .hero-visual {
+    min-height: 390px;
+  }
+
+  .ecosystem-card {
+    padding: 13px;
+
+    border-radius: 20px;
+  }
+
+  .ecosystem-map {
+    height: 245px;
+  }
+
+  .verification-card {
+    top: 30px;
+    right: -3px;
+  }
+
+  .monitoring-card {
+    bottom: 25px;
+    left: -3px;
+  }
+
+  .floating-card {
+    padding: 8px 10px;
+  }
+
+  .floating-card strong {
+    font-size: 9px;
+  }
+
+  .trust-strip {
+    margin: 0 20px;
+
+    padding: 20px 0;
+
+    grid-template-columns: 1fr;
+
+    gap: 18px;
+  }
+
+  .trust-strip-divider {
+    display: none;
+  }
+
+  .content-section {
+    padding: 90px 20px;
+  }
+
+  .section-heading {
+    display: block;
+
+    margin-bottom: 35px;
+  }
+
+  .section-heading h2,
+  .about-content h2 {
+    font-size: 39px;
+    letter-spacing: -2px;
+  }
+
+  .section-heading > p {
+    margin-top: 18px;
+  }
+
+  .projects-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .projects-grid .project-card:last-child {
+    grid-column: auto;
+
+    max-width: none;
+  }
+
+  .steps-container {
+    grid-template-columns: 1fr;
+  }
+
+  .step-connector {
+    margin: 0 auto;
+
+    transform: rotate(90deg);
+  }
+
+  .step-card {
+    min-height: auto;
+  }
+
+  .about-section {
+    gap: 20px;
+  }
+
+  .about-visual {
+    min-height: 300px;
+  }
+
+  .circle-one {
+    width: 250px;
+    height: 250px;
+  }
+
+  .circle-two {
+    width: 180px;
+    height: 180px;
+  }
+
+  .about-floating-one {
+    right: 0;
+  }
+
+  .about-floating-two {
+    left: 0;
+  }
+
+  .about-points {
+    grid-template-columns: 1fr;
+  }
+
+  .landing-footer {
+    margin: 0 20px;
+
+    padding: 30px 0;
+
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 20px;
+  }
+
+  .footer-right {
+    flex-wrap: wrap;
+  }
+}
+
+@media (max-width: 430px) {
+  .navbar-logo span {
+    font-size: 16px;
+  }
+
+  .logo-mark {
+    width: 34px;
+    height: 34px;
+  }
+
+  .hero-content h1 {
+    font-size: 47px;
+  }
+
+  .ecosystem-stats strong {
+    font-size: 14px;
+  }
+
+  .ecosystem-stats span {
+    font-size: 8px;
+  }
+
+  .floating-card {
+    transform: scale(0.9);
+  }
+}
+/* =========================================================
+   BLUEGUARD — HOW IT WORKS DATA FLOW
+   ========================================================= */
+
+.steps-container {
+  position: relative;
+}
+
+/* -----------------------------------------
+   STEP CARD
+----------------------------------------- */
+
+.animated-step-card {
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+  animation: stepReveal 0.8s cubic-bezier(0.22, 1, 0.36, 1)
+    var(--step-delay) both;
+  transition:
+    transform 0.35s ease,
+    box-shadow 0.35s ease,
+    border-color 0.35s ease;
+}
+
+.animated-step-card:hover {
+  transform: translateY(-8px);
+}
+
+/* Moving scan line */
+
+.step-scan {
+  position: absolute;
+  top: -120%;
+  left: 0;
+  width: 100%;
+  height: 70%;
+  pointer-events: none;
+  opacity: 0;
+  background: linear-gradient(
+    to bottom,
+    transparent,
+    rgba(16, 185, 129, 0.08),
+    transparent
+  );
+}
+
+.animated-step-card:hover .step-scan {
+  opacity: 1;
+  animation: stepScan 1.5s ease-in-out;
+}
+
+/* -----------------------------------------
+   STEP NUMBER
+----------------------------------------- */
+
+.step-number {
+  font-variant-numeric: tabular-nums;
+  transition: color 0.3s ease;
+}
+
+.animated-step-card:hover .step-number {
+  color: #10b981;
+}
+
+/* -----------------------------------------
+   ICON
+----------------------------------------- */
+
+.step-icon {
+  position: relative;
+  isolation: isolate;
+}
+
+.step-icon-pulse {
+  position: absolute;
+  inset: -7px;
+  border: 1px solid rgba(16, 185, 129, 0.3);
+  border-radius: 50%;
+  opacity: 0;
+  transform: scale(0.7);
+}
+
+.animated-step-card:hover .step-icon-pulse {
+  animation: iconPulse 1.5s ease-out infinite;
+}
+
+/* -----------------------------------------
+   ACTIVE PROCESS LABEL
+----------------------------------------- */
+
+.step-status {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  margin-top: 18px;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.13em;
+  color: #7b8794;
+}
+
+.step-status .status-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #10b981;
+  box-shadow: 0 0 0 rgba(16, 185, 129, 0.5);
+  animation: processPulse 2s ease-out infinite;
+}
+
+/* -----------------------------------------
+   DATA FOOTER
+----------------------------------------- */
+
+.step-data {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 10px;
+  margin-top: 22px;
+  padding-top: 14px;
+  border-top: 1px solid rgba(15, 23, 42, 0.07);
+  font-size: 9px;
+  letter-spacing: 0.08em;
+}
+
+.step-data > span {
+  color: #8b96a5;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.step-data strong {
+  color: #1f2937;
+  font-size: 9px;
+  white-space: nowrap;
+}
+
+/* -----------------------------------------
+   DATA SIGNAL LINE
+----------------------------------------- */
+
+.step-data-line {
+  position: relative;
+  height: 1px;
+  overflow: hidden;
+  background: rgba(16, 185, 129, 0.15);
+}
+
+.data-particle {
+  position: absolute;
+  top: 50%;
+  left: -10px;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: #10b981;
+  box-shadow: 0 0 8px rgba(16, 185, 129, 0.6);
+  transform: translateY(-50%);
+  animation: dataTravel 1.8s linear infinite;
+}
+
+/* -----------------------------------------
+   CONNECTORS
+----------------------------------------- */
+
+.animated-step-connector {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.connector-line {
+  position: absolute;
+  width: 100%;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    rgba(16, 185, 129, 0.08),
+    rgba(16, 185, 129, 0.35),
+    rgba(16, 185, 129, 0.08)
+  );
+}
+
+.connector-particle {
+  position: absolute;
+  left: 0;
+  width: 100%;
+  height: 8px;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.connector-particle span {
+  position: absolute;
+  top: 50%;
+  left: -8px;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #10b981;
+  box-shadow:
+    0 0 8px rgba(16, 185, 129, 0.8),
+    0 0 18px rgba(16, 185, 129, 0.35);
+  transform: translateY(-50%);
+  animation: connectorTravel 2.2s
+    cubic-bezier(0.4, 0, 0.2, 1)
+    var(--connector-delay)
+    infinite;
+}
+
+.animated-step-connector svg {
+  position: relative;
+  z-index: 2;
+  padding: 5px;
+  box-sizing: content-box;
+  border-radius: 50%;
+  background: #fff;
+  color: #10b981;
+}
+
+/* -----------------------------------------
+   ANIMATIONS
+----------------------------------------- */
+
+@keyframes stepReveal {
+  from {
+    opacity: 0;
+    transform: translateY(35px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes stepScan {
+  0% {
+    top: -70%;
+  }
+
+  100% {
+    top: 130%;
+  }
+}
+
+@keyframes iconPulse {
+  0% {
+    opacity: 0.7;
+    transform: scale(0.7);
+  }
+
+  70% {
+    opacity: 0;
+    transform: scale(1.35);
+  }
+
+  100% {
+    opacity: 0;
+    transform: scale(1.35);
+  }
+}
+
+@keyframes processPulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.45);
+  }
+
+  70% {
+    box-shadow: 0 0 0 7px rgba(16, 185, 129, 0);
+  }
+
+  100% {
+    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0);
+  }
+}
+
+@keyframes dataTravel {
+  0% {
+    left: -8px;
+  }
+
+  100% {
+    left: calc(100% + 8px);
+  }
+}
+
+@keyframes connectorTravel {
+  0% {
+    left: -8px;
+    opacity: 0;
+  }
+
+  10% {
+    opacity: 1;
+  }
+
+  90% {
+    opacity: 1;
+  }
+
+  100% {
+    left: calc(100% + 8px);
+    opacity: 0;
+  }
+}
+
+/* -----------------------------------------
+   REDUCED MOTION
+----------------------------------------- */
+
+@media (prefers-reduced-motion: reduce) {
+  .animated-step-card,
+  .step-scan,
+  .step-icon-pulse,
+  .step-status .status-dot,
+  .data-particle,
+  .connector-particle span {
+    animation: none !important;
+  }
+
+  .animated-step-card {
+    opacity: 1;
+    transform: none;
+  }
+}
+/* =========================================================
+   BLUEGUARD — NEW WHITE CLIMATETECH VISUAL SYSTEM
+   IMPORTANT:
+   This is intentionally appended so the existing
+   functionality/layout remains untouched.
+   ========================================================= */
+
+/* ---------------------------------------------------------
+   CORE LANDING SURFACE
+--------------------------------------------------------- */
+
+.blueguard-page {
+  color: #17231f;
+  background: #f8faf8 !important;
+  background-image:
+    linear-gradient(
+      rgba(16, 63, 48, 0.025) 1px,
+      transparent 1px
+    ),
+    linear-gradient(
+      90deg,
+      rgba(16, 63, 48, 0.025) 1px,
+      transparent 1px
+    ) !important;
+  background-size: 72px 72px;
+}
+
+/* Remove the old neon atmosphere */
+
+.blueguard-page .background-orb,
+.blueguard-page .hero-glow {
+  display: none !important;
+}
+
+
+/* =========================================================
+   NAVBAR
+   ========================================================= */
+
+.blueguard-page .landing-navbar {
+  top: 18px;
+
+  border: 1px solid #dce6e1 !important;
+
+  background: rgba(255, 255, 255, 0.94) !important;
+
+  box-shadow:
+    0 8px 30px rgba(22, 52, 42, 0.07),
+    0 1px 0 rgba(255, 255, 255, 0.9) inset !important;
+
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+}
+
+.blueguard-page .landing-navbar-scrolled {
+  background: rgba(255, 255, 255, 0.97) !important;
+
+  border-color: #cddbd5 !important;
+
+  box-shadow:
+    0 12px 35px rgba(22, 52, 42, 0.09) !important;
+}
+
+.blueguard-page .navbar-logo {
+  color: #10231c !important;
+}
+
+.blueguard-page .logo-mark {
+  color: #14795a !important;
+
+  border-color: #b9dacc !important;
+
+  background: #edf8f3 !important;
+}
+
+.blueguard-page .desktop-nav button {
+  color: #64736d !important;
+}
+
+.blueguard-page .desktop-nav button:hover {
+  color: #10231c !important;
+  background: #f1f6f3 !important;
+}
+
+.blueguard-page .navbar-login {
+  color: #ffffff !important;
+  background: #167957 !important;
+  border-color: #167957 !important;
+}
+
+.blueguard-page .navbar-login:hover {
+  background: #10694b !important;
+
+  box-shadow:
+    0 10px 25px rgba(22, 121, 87, 0.18) !important;
+}
+
+
+/* =========================================================
+   HERO
+   ========================================================= */
+
+.blueguard-page .hero-section {
+  min-height: 820px;
+
+  padding-top: 165px;
+  padding-bottom: 90px;
+}
+
+
+/* Hero badge */
+
+.blueguard-page .hero-badge {
+  color: #397061 !important;
+
+  border: 1px solid #cfe2d9 !important;
+
+  background: #eef8f3 !important;
+}
+
+.blueguard-page .hero-badge .status-dot {
+  background: #16956c !important;
+
+  box-shadow:
+    0 0 0 5px rgba(22, 149, 108, 0.09) !important;
+}
+
+
+/* Main heading */
+
+.blueguard-page .hero-content h1 {
+  color: #10231c !important;
+
+  letter-spacing: -5px;
+}
+
+.blueguard-page .hero-content h1 span {
+  color: #147957 !important;
+
+  background: none !important;
+
+  -webkit-text-fill-color: initial !important;
+}
+
+
+/* Hero description */
+
+.blueguard-page .hero-description {
+  color: #61716b !important;
+}
+
+
+/* ---------------------------------------------------------
+   BUTTONS
+--------------------------------------------------------- */
+
+.blueguard-page .primary-button {
+  color: #ffffff !important;
+
+  background: #147957 !important;
+
+  border-color: #147957 !important;
+
+  box-shadow:
+    0 8px 22px rgba(20, 121, 87, 0.12);
+}
+
+.blueguard-page .primary-button:hover {
+  background: #0e694b !important;
+
+  box-shadow:
+    0 12px 28px rgba(20, 121, 87, 0.18) !important;
+}
+
+.blueguard-page .secondary-button {
+  color: #23362f !important;
+
+  background: #ffffff !important;
+
+  border: 1px solid #d5e0db !important;
+}
+
+.blueguard-page .secondary-button:hover {
+  color: #147957 !important;
+
+  background: #f4faf7 !important;
+
+  border-color: #b8d5c8 !important;
+}
+
+
+/* =========================================================
+   HERO TRUST
+   ========================================================= */
+
+.blueguard-page .trust-avatar {
+  color: #147957 !important;
+
+  background: #edf7f2 !important;
+
+  border-color: #f8faf8 !important;
+}
+
+.blueguard-page .hero-trust strong {
+  color: #30443c !important;
+}
+
+.blueguard-page .hero-trust span {
+  color: #7b8983 !important;
+}
+
+
+/* =========================================================
+   HERO DATA PANEL
+   ========================================================= */
+
+/*
+   We keep:
+   - Blue Carbon Network
+   - Live
+   - Projects
+   - Verified
+   - Impact
+   - Verification
+   - Monitoring
+   - 82% Progress
+
+   We only change how they look.
+*/
+
+.blueguard-page .ecosystem-card {
+  border: 1px solid #d8e4df !important;
+
+  border-radius: 28px;
+
+  background: #ffffff !important;
+
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+
+  box-shadow:
+    0 25px 70px rgba(25, 58, 47, 0.09),
+    0 2px 0 rgba(255, 255, 255, 1) inset !important;
+}
+
+.blueguard-page .small-label {
+  color: #147957 !important;
+}
+
+.blueguard-page .ecosystem-header h3 {
+  color: #182c24 !important;
+}
+
+.blueguard-page .live-indicator {
+  color: #147957 !important;
+
+  border-color: #cce2d8 !important;
+
+  background: #f0f8f4 !important;
+}
+
+.blueguard-page .live-indicator span {
+  background: #15976d !important;
+
+  box-shadow:
+    0 0 0 4px rgba(21, 151, 109, 0.08) !important;
+}
+
+
+/* =========================================================
+   DATA MAP
+========================================================= */
+
+.blueguard-page .ecosystem-map {
+  border: 1px solid #e0e9e5 !important;
+
+  background:
+    radial-gradient(
+      circle at 50% 50%,
+      rgba(38, 151, 111, 0.08),
+      transparent 30%
+    ),
+    #f5f9f7 !important;
+}
+
+
+/* Grid becomes a subtle GIS grid */
+
+.blueguard-page .map-grid {
+  opacity: 0.8 !important;
+
+  background-image:
+    linear-gradient(
+      rgba(31, 104, 79, 0.065) 1px,
+      transparent 1px
+    ),
+    linear-gradient(
+      90deg,
+      rgba(31, 104, 79, 0.065) 1px,
+      transparent 1px
+    ) !important;
+
+  background-size: 40px 40px !important;
+}
+
+
+/* Connection lines */
+
+.blueguard-page .map-line {
+  background:
+    linear-gradient(
+      90deg,
+      rgba(25, 121, 87, 0.55),
+      rgba(25, 121, 87, 0.04)
+    ) !important;
+}
+
+
+/* Project nodes */
+
+.blueguard-page .map-node {
+  background: #158765 !important;
+
+  box-shadow:
+    0 0 0 6px rgba(21, 135, 101, 0.08),
+    0 4px 14px rgba(21, 135, 101, 0.18) !important;
+}
+
+.blueguard-page .map-node span {
+  background: #ffffff !important;
+}
+
+
+/* Central BlueGuard node */
+
+.blueguard-page .map-center {
+  color: #147957 !important;
+
+  background: #ffffff !important;
+
+  border: 1px solid #9bcbb8 !important;
+
+  box-shadow:
+    0 0 0 12px rgba(21, 135, 101, 0.045),
+    0 15px 35px rgba(21, 135, 101, 0.08) !important;
+}
+
+
+/* =========================================================
+   HERO STATISTICS
+========================================================= */
+
+.blueguard-page .ecosystem-stats div {
+  border-color: #e4ebe8 !important;
+}
+
+.blueguard-page .ecosystem-stats span {
+  color: #8a9892 !important;
+}
+
+.blueguard-page .ecosystem-stats strong {
+  color: #172b23 !important;
+}
+
+
+/* =========================================================
+   FLOATING VERIFICATION / MONITORING CARDS
+========================================================= */
+
+.blueguard-page .floating-card {
+  border: 1px solid #d9e6e0 !important;
+
+  background: #ffffff !important;
+
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+
+  box-shadow:
+    0 15px 35px rgba(24, 56, 45, 0.10) !important;
+}
+
+.blueguard-page .floating-card span {
+  color: #87948f !important;
+}
+
+.blueguard-page .floating-card strong {
+  color: #20352d !important;
+}
+
+.blueguard-page .verified-icon {
+  color: #147957 !important;
+
+  background: #edf8f3 !important;
+}
+
+.blueguard-page .monitoring-icon {
+  color: #187c80 !important;
+
+  background: #eef8f8 !important;
+}
+
+
+/* =========================================================
+   TRUST STRIP
+========================================================= */
+
+.blueguard-page .trust-strip {
+  border-color: #dfe8e4 !important;
+}
+
+.blueguard-page .trust-strip-item > svg {
+  color: #147957 !important;
+}
+
+.blueguard-page .trust-strip-item strong {
+  color: #34463f !important;
+}
+
+.blueguard-page .trust-strip-item span {
+  color: #89958f !important;
+}
+
+.blueguard-page .trust-strip-divider {
+  background: #dce6e1 !important;
+}
+
+
+/* =========================================================
+   ALL CONTENT SECTIONS
+========================================================= */
+
+.blueguard-page .content-section {
+  position: relative;
+}
+
+.blueguard-page .section-eyebrow {
+  color: #147957 !important;
+}
+
+.blueguard-page .section-heading h2,
+.blueguard-page .about-content h2 {
+  color: #152a22 !important;
+}
+
+.blueguard-page .section-heading h2 span,
+.blueguard-page .about-content h2 span {
+  color: #147957 !important;
+
+  background: none !important;
+
+  -webkit-text-fill-color: initial !important;
+}
+
+.blueguard-page .section-heading > p {
+  color: #718079 !important;
+}
+
+
+/* =========================================================
+   PROJECT CARDS
+========================================================= */
+
+.blueguard-page .project-card {
+  border: 1px solid #dce6e1 !important;
+
+  background: #ffffff !important;
+
+  box-shadow:
+    0 8px 25px rgba(26, 58, 47, 0.045) !important;
+
+  transition:
+    transform 0.35s ease,
+    box-shadow 0.35s ease,
+    border-color 0.35s ease !important;
+}
+
+.blueguard-page .project-card:hover {
+  transform: translateY(-7px);
+
+  border-color: #bdd8cc !important;
+
+  box-shadow:
+    0 20px 45px rgba(26, 58, 47, 0.10) !important;
+}
+
+.blueguard-page .project-image-overlay {
+  background:
+    linear-gradient(
+      180deg,
+      transparent 45%,
+      rgba(10, 32, 25, 0.32)
+    ) !important;
+}
+
+.blueguard-page .project-type {
+  background: rgba(255, 255, 255, 0.92) !important;
+
+  color: #285a49 !important;
+
+  border-color: rgba(255, 255, 255, 0.75) !important;
+}
+
+.blueguard-page .verified-badge {
+  color: #147957 !important;
+
+  background: #ffffff !important;
+
+  border-color: #ffffff !important;
+}
+
+.blueguard-page .project-card-content {
+  background: #ffffff !important;
+}
+
+.blueguard-page .project-location {
+  color: #7a8982 !important;
+}
+
+.blueguard-page .project-card-content h3 {
+  color: #1a2d25 !important;
+}
+
+.blueguard-page .project-progress-header span,
+.blueguard-page .project-footer span {
+  color: #89958f !important;
+}
+
+.blueguard-page .project-progress-header strong,
+.blueguard-page .project-footer strong {
+  color: #273d34 !important;
+}
+
+.blueguard-page .progress-track {
+  background: #e9efec !important;
+}
+
+.blueguard-page .progress-fill {
+  background: #16825e !important;
+}
+
+
+/* =========================================================
+   OUTLINE BUTTON
+========================================================= */
+
+.blueguard-page .outline-button {
+  color: #285044 !important;
+
+  border-color: #cfdcd6 !important;
+
+  background: #ffffff !important;
+}
+
+.blueguard-page .outline-button:hover {
+  color: #147957 !important;
+
+  border-color: #9fc8b7 !important;
+
+  background: #f2f8f5 !important;
+}
+
+
+/* =========================================================
+   HOW IT WORKS
+========================================================= */
+
+.blueguard-page .step-card {
+  border: 1px solid #dce7e2 !important;
+
+  background: #ffffff !important;
+
+  box-shadow:
+    0 8px 25px rgba(27, 59, 48, 0.045) !important;
+}
+
+.blueguard-page .step-card:hover {
+  border-color: #b9d7c9 !important;
+
+  box-shadow:
+    0 18px 40px rgba(27, 59, 48, 0.09) !important;
+}
+
+.blueguard-page .step-top > span {
+  color: #9aa7a1 !important;
+}
+
+.blueguard-page .step-icon {
+  color: #147957 !important;
+
+  background: #eef8f3 !important;
+
+  border-color: #cde3d8 !important;
+}
+
+.blueguard-page .step-card h3 {
+  color: #1a2e26 !important;
+}
+
+.blueguard-page .step-card p {
+  color: #74827c !important;
+}
+
+.blueguard-page .step-connector {
+  color: #147957 !important;
+}
+
+
+/* =========================================================
+   ABOUT
+========================================================= */
+
+.blueguard-page .about-visual {
+  background:
+    linear-gradient(
+      145deg,
+      #f0f8f4,
+      #ffffff
+    ) !important;
+
+  border: 1px solid #d9e6e0 !important;
+
+  border-radius: 28px;
+
+  box-shadow:
+    0 15px 45px rgba(27, 61, 48, 0.06);
+}
+
+.blueguard-page .about-circle {
+  border-color: rgba(20, 121, 87, 0.12) !important;
+
+  background: rgba(20, 121, 87, 0.025) !important;
+}
+
+.blueguard-page .about-core {
+  color: #147957 !important;
+
+  background: #ffffff !important;
+
+  border-color: #bddbce !important;
+
+  box-shadow:
+    0 15px 40px rgba(20, 121, 87, 0.09) !important;
+}
+
+.blueguard-page .about-core span {
+  color: #20372d !important;
+}
+
+.blueguard-page .about-core small {
+  color: #87958f !important;
+}
+
+.blueguard-page .about-floating {
+  color: #28604d !important;
+
+  background: #ffffff !important;
+
+  border: 1px solid #d7e4de !important;
+
+  box-shadow:
+    0 10px 25px rgba(27, 61, 48, 0.07) !important;
+}
+
+.blueguard-page .about-content p {
+  color: #718079 !important;
+}
+
+.blueguard-page .about-points > div {
+  color: #31473e !important;
+}
+
+.blueguard-page .about-points svg {
+  color: #147957 !important;
+}
+
+
+/* =========================================================
+   FOOTER
+========================================================= */
+
+.blueguard-page .landing-footer {
+  border-color: #dce6e1 !important;
+
+  background: #f8faf8 !important;
+}
+
+.blueguard-page .footer-brand p,
+.blueguard-page .footer-right {
+  color: #87938e !important;
+}
+
+
+/* =========================================================
+   SUBTLE DATA ANIMATION
+   No neon / no sci-fi glow
+========================================================= */
+
+.blueguard-page .map-node {
+  animation: blueguard-node-breathe 3.5s ease-in-out infinite;
+}
+
+.blueguard-page .node-two {
+  animation-delay: 0.7s;
+}
+
+.blueguard-page .node-three {
+  animation-delay: 1.4s;
+}
+
+.blueguard-page .node-four {
+  animation-delay: 2.1s;
+}
+
+.blueguard-page .map-center {
+  animation: blueguard-center-breathe 4s ease-in-out infinite;
+}
+
+.blueguard-page .live-indicator span,
+.blueguard-page .status-dot {
+  animation: blueguard-live-dot 2.5s ease-in-out infinite;
+}
+
+@keyframes blueguard-node-breathe {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+
+  50% {
+    transform: scale(1.25);
+  }
+}
+
+@keyframes blueguard-center-breathe {
+  0%,
+  100% {
+    box-shadow:
+      0 0 0 12px rgba(21, 135, 101, 0.045),
+      0 15px 35px rgba(21, 135, 101, 0.08);
+  }
+
+  50% {
+    box-shadow:
+      0 0 0 20px rgba(21, 135, 101, 0.025),
+      0 18px 42px rgba(21, 135, 101, 0.12);
+  }
+}
+
+@keyframes blueguard-live-dot {
+  0%,
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+
+  50% {
+    opacity: 0.55;
+    transform: scale(0.82);
+  }
+}
+
+
+/* =========================================================
+   ACCESSIBILITY
+========================================================= */
+
+@media (prefers-reduced-motion: reduce) {
+  .blueguard-page *,
+  .blueguard-page *::before,
+  .blueguard-page *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+    transition-duration: 0.001ms !important;
+  }
+}
+/* =========================================================
+   BLUEGUARD AUTH / LOGIN
+   Premium white ClimateTech redesign
+   ========================================================= */
+
+.blueguard-auth-page {
+  min-height: 100vh;
+
+  color: #172a22;
+
+  background:
+    radial-gradient(
+      circle at 8% 15%,
+      rgba(35, 145, 108, 0.055),
+      transparent 28%
+    ),
+    radial-gradient(
+      circle at 92% 85%,
+      rgba(38, 125, 154, 0.045),
+      transparent 28%
+    ),
+    #f7faf8;
+
+  position: relative;
+  overflow-x: hidden;
+}
+
+
+/* =========================================================
+   TOP BACK BUTTON
+   ========================================================= */
+
+.blueguard-auth-page > button {
+  position: relative;
+
+  width: min(1120px, 100%);
+  margin: 0 auto 18px !important;
+
+  padding: 10px 0;
+
+  color: #60736b !important;
+
+  justify-content: flex-start !important;
+
+  font-weight: 600;
+
+  transition:
+    color 0.25s ease,
+    transform 0.25s ease;
+}
+
+.blueguard-auth-page > button:hover {
+  color: #147957 !important;
+  transform: translateX(-3px);
+}
+
+
+/* =========================================================
+   MAIN AUTH SHELL
+   ========================================================= */
+
+.blueguard-auth-page > div {
+  position: relative;
+
+  width: min(1120px, 100%);
+
+  min-height: 720px;
+
+  margin: 0 auto !important;
+
+  display: grid;
+
+  grid-template-columns: 0.9fr 1.1fr;
+
+  overflow: hidden;
+
+  border: 1px solid #dce7e2;
+
+  border-radius: 30px !important;
+
+  background: #ffffff !important;
+
+  box-shadow:
+    0 25px 70px rgba(29, 63, 50, 0.08),
+    0 4px 14px rgba(29, 63, 50, 0.035) !important;
+}
+
+
+/* =========================================================
+   LEFT INFORMATION PANEL
+   ========================================================= */
+
+.blueguard-auth-page > div > section:first-child {
+  position: relative;
+
+  display: flex;
+
+  flex-direction: column;
+
+  justify-content: space-between;
+
+  overflow: hidden;
+
+  padding: 42px !important;
+
+  color: #183229 !important;
+
+  background:
+    linear-gradient(
+      145deg,
+      #f0f8f4 0%,
+      #e9f5f0 52%,
+      #f8fbfa 100%
+    ) !important;
+
+  border-right: 1px solid #dce9e3;
+}
+
+
+/* Topographic pattern */
+
+.blueguard-auth-page > div > section:first-child::before {
+  content: "";
+
+  position: absolute;
+
+  top: -140px;
+  right: -140px;
+
+  width: 440px;
+  height: 440px;
+
+  border-radius: 50%;
+
+  background:
+    repeating-radial-gradient(
+      circle,
+      rgba(20, 121, 87, 0.075) 0,
+      rgba(20, 121, 87, 0.075) 1px,
+      transparent 2px,
+      transparent 27px
+    );
+
+  opacity: 0.65;
+
+  pointer-events: none;
+}
+
+
+/* Bottom environmental texture */
+
+.blueguard-auth-page > div > section:first-child::after {
+  content: "";
+
+  position: absolute;
+
+  left: -120px;
+  bottom: -180px;
+
+  width: 520px;
+  height: 420px;
+
+  border-radius: 50%;
+
+  background:
+    radial-gradient(
+      ellipse at center,
+      rgba(23, 121, 87, 0.10),
+      transparent 65%
+    );
+
+  pointer-events: none;
+}
+
+
+/* =========================================================
+   LEFT BRAND CARD
+   ========================================================= */
+
+.blueguard-auth-page > div > section:first-child > div:first-child {
+  position: relative;
+
+  z-index: 2;
+
+  overflow: hidden;
+
+  padding: 28px !important;
+
+  border: 1px solid #d2e4dc !important;
+
+  border-radius: 24px !important;
+
+  background:
+    rgba(255, 255, 255, 0.72) !important;
+
+  box-shadow:
+    0 15px 40px rgba(25, 76, 58, 0.055) !important;
+
+  backdrop-filter: blur(12px);
+
+  -webkit-backdrop-filter: blur(12px);
+}
+
+
+/* Remove old dark blobs */
+
+.blueguard-auth-page
+  > div
+  > section:first-child
+  > div:first-child
+  > div:not(.relative) {
+  display: none !important;
+}
+
+
+/* =========================================================
+   BRAND LOGO
+   ========================================================= */
+
+.blueguard-auth-page
+  > div
+  > section:first-child
+  .relative
+  > div:first-child
+  > div:first-child {
+  color: #17352a !important;
+}
+
+.blueguard-auth-page
+  > div
+  > section:first-child
+  .relative
+  > div:first-child
+  > div:first-child
+  > div:first-child {
+  width: 48px;
+  height: 48px;
+
+  border: 1px solid #c8dfd4 !important;
+
+  border-radius: 15px !important;
+
+  background: #e8f6f0 !important;
+}
+
+.blueguard-auth-page
+  > div
+  > section:first-child
+  .relative
+  > div:first-child
+  > div:first-child
+  > div:first-child
+  svg {
+  color: #147957 !important;
+}
+
+
+/* BlueGuard title */
+
+.blueguard-auth-page
+  > div
+  > section:first-child
+  h1 {
+  color: #183229 !important;
+}
+
+
+/* MRV badge */
+
+.blueguard-auth-page
+  > div
+  > section:first-child
+  h1
+  + span {
+  color: #147957 !important;
+
+  border-color: #c8e1d6 !important;
+
+  background: #edf8f3 !important;
+}
+
+
+/* Online status */
+
+.blueguard-auth-page
+  > div
+  > section:first-child
+  .relative
+  > div:first-child
+  > div:nth-child(2) {
+  color: #75857e !important;
+}
+
+.blueguard-auth-page
+  > div
+  > section:first-child
+  .relative
+  > div:first-child
+  > div:nth-child(2)
+  span {
+  background: #15976d !important;
+}
+
+
+/* =========================================================
+   LEFT HEADLINE
+   ========================================================= */
+
+.blueguard-auth-page
+  > div
+  > section:first-child
+  .relative
+  > p {
+  color: #147957 !important;
+}
+
+.blueguard-auth-page
+  > div
+  > section:first-child
+  .relative
+  > h2 {
+  color: #183229 !important;
+
+  font-size: clamp(2rem, 4vw, 3rem) !important;
+
+  line-height: 1.08 !important;
+
+  letter-spacing: -0.045em;
+}
+
+.blueguard-auth-page
+  > div
+  > section:first-child
+  .relative
+  > h2
+  span {
+  color: #147957 !important;
+
+  background: none !important;
+
+  -webkit-text-fill-color: #147957 !important;
+}
+
+.blueguard-auth-page
+  > div
+  > section:first-child
+  .relative
+  > p:last-child {
+  color: #65776f !important;
+
+  line-height: 1.7 !important;
+}
+
+
+/* =========================================================
+   FEATURE CARDS
+   ========================================================= */
+
+.blueguard-auth-page
+  > div
+  > section:first-child
+  > div:nth-child(2) {
+  position: relative;
+
+  z-index: 3;
+
+  margin-top: 30px !important;
+
+  gap: 10px !important;
+}
+
+.blueguard-auth-page
+  > div
+  > section:first-child
+  > div:nth-child(2)
+  > div {
+  border: 1px solid #d5e4de !important;
+
+  border-radius: 17px !important;
+
+  background: rgba(255, 255, 255, 0.72) !important;
+
+  box-shadow: none !important;
+
+  transition:
+    transform 0.3s ease,
+    border-color 0.3s ease,
+    box-shadow 0.3s ease;
+}
+
+.blueguard-auth-page
+  > div
+  > section:first-child
+  > div:nth-child(2)
+  > div:hover {
+  transform: translateY(-4px);
+
+  border-color: #acd2c2 !important;
+
+  box-shadow:
+    0 12px 25px rgba(25, 76, 58, 0.07) !important;
+}
+
+.blueguard-auth-page
+  > div
+  > section:first-child
+  > div:nth-child(2)
+  svg {
+  color: #147957 !important;
+}
+
+.blueguard-auth-page
+  > div
+  > section:first-child
+  > div:nth-child(2)
+  p {
+  color: #52675e !important;
+}
+
+
+/* =========================================================
+   PROTOTYPE NOTE
+   ========================================================= */
+
+.blueguard-auth-page
+  > div
+  > section:first-child
+  > div:last-child {
+  position: relative;
+
+  z-index: 3;
+
+  border: 1px solid #d4e7de !important;
+
+  background: rgba(237, 248, 243, 0.75) !important;
+
+  border-radius: 16px !important;
+}
+
+.blueguard-auth-page
+  > div
+  > section:first-child
+  > div:last-child
+  p {
+  color: #5d746a !important;
+}
+
+
+/* =========================================================
+   RIGHT AUTH PANEL
+   ========================================================= */
+
+.blueguard-auth-page > div > section:last-child {
+  position: relative;
+
+  background: #ffffff !important;
+
+  color: #172a22 !important;
+
+  padding: 52px !important;
+
+  scrollbar-width: thin;
+
+  scrollbar-color: #c7d9d1 transparent;
+}
+
+
+/* Content width */
+
+.blueguard-auth-page
+  > div
+  > section:last-child
+  > div {
+  max-width: 520px !important;
+}
+
+
+/* =========================================================
+   SECTION LABEL
+   ========================================================= */
+
+.blueguard-auth-page
+  > div
+  > section:last-child
+  p:first-child {
+  color: #147957 !important;
+
+  font-size: 11px !important;
+
+  font-weight: 800 !important;
+
+  letter-spacing: 0.14em;
+}
+
+
+/* =========================================================
+   AUTH HEADING
+   ========================================================= */
+
+.blueguard-auth-page
+  > div
+  > section:last-child
+  h1 {
+  color: #162b23 !important;
+
+  font-size: clamp(2rem, 4vw, 2.55rem) !important;
+
+  line-height: 1.1 !important;
+
+  letter-spacing: -0.045em;
+}
+
+.blueguard-auth-page
+  > div
+  > section:last-child
+  > div
+  > p:nth-child(3) {
+  color: #78877f !important;
+
+  line-height: 1.6;
+}
+
+
+/* =========================================================
+   LOGIN / REGISTER SWITCH
+   ========================================================= */
+
+.blueguard-auth-page
+  > div
+  > section:last-child
+  .bg-slate-100 {
+  padding: 4px !important;
+
+  border: 1px solid #e3ebe7;
+
+  background: #f4f7f5 !important;
+
+  border-radius: 14px !important;
+}
+
+.blueguard-auth-page
+  > div
+  > section:last-child
+  .bg-slate-100
+  button {
+  min-height: 42px;
+
+  border-radius: 10px !important;
+
+  transition:
+    color 0.2s ease,
+    background 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.blueguard-auth-page
+  > div
+  > section:last-child
+  .bg-slate-100
+  button.bg-white {
+  color: #183229 !important;
+
+  background: #ffffff !important;
+
+  box-shadow:
+    0 2px 7px rgba(24, 50, 41, 0.08) !important;
+}
+
+.blueguard-auth-page
+  > div
+  > section:last-child
+  .bg-slate-100
+  button:not(.bg-white) {
+  color: #77857f !important;
+}
+
+.blueguard-auth-page
+  > div
+  > section:last-child
+  .bg-slate-100
+  button:not(.bg-white):hover {
+  color: #183229 !important;
+}
+
+
+/* =========================================================
+   FORM LABELS
+   ========================================================= */
+
+.blueguard-auth-page
+  > div
+  > section:last-child
+  label {
+  color: #30443b !important;
+
+  font-weight: 650 !important;
+}
+
+
+/* =========================================================
+   INPUTS
+   ========================================================= */
+
+.blueguard-auth-page
+  > div
+  > section:last-child
+  input,
+.blueguard-auth-page
+  > div
+  > section:last-child
+  select {
+  min-height: 50px;
+
+  border: 1px solid #d9e4df !important;
+
+  border-radius: 12px !important;
+
+  background: #ffffff !important;
+
+  color: #1a3027 !important;
+
+  box-shadow:
+    0 1px 2px rgba(20, 50, 39, 0.025);
+
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease,
+    background 0.2s ease;
+}
+
+.blueguard-auth-page
+  > div
+  > section:last-child
+  input::placeholder {
+  color: #a1ada7 !important;
+}
+
+.blueguard-auth-page
+  > div
+  > section:last-child
+  input:hover,
+.blueguard-auth-page
+  > div
+  > section:last-child
+  select:hover {
+  border-color: #c5d8cf !important;
+}
+
+.blueguard-auth-page
+  > div
+  > section:last-child
+  input:focus,
+.blueguard-auth-page
+  > div
+  > section:last-child
+  select:focus {
+  border-color: #43a982 !important;
+
+  box-shadow:
+    0 0 0 4px rgba(22, 121, 87, 0.075) !important;
+
+  outline: none !important;
+}
+
+
+/* =========================================================
+   PRIMARY AUTH BUTTON
+   ========================================================= */
+
+.blueguard-auth-page
+  > div
+  > section:last-child
+  form
+  button[type="submit"] {
+  min-height: 52px;
+
+  border-radius: 12px !important;
+
+  background:
+    linear-gradient(
+      135deg,
+      #168560,
+      #117451
+    ) !important;
+
+  box-shadow:
+    0 10px 24px rgba(20, 121, 87, 0.16) !important;
+
+  transition:
+    transform 0.25s ease,
+    box-shadow 0.25s ease,
+    background 0.25s ease;
+}
+
+.blueguard-auth-page
+  > div
+  > section:last-child
+  form
+  button[type="submit"]:hover {
+  transform: translateY(-2px);
+
+  background:
+    linear-gradient(
+      135deg,
+      #147957,
+      #0d6748
+    ) !important;
+
+  box-shadow:
+    0 14px 30px rgba(20, 121, 87, 0.21) !important;
+}
+
+.blueguard-auth-page
+  > div
+  > section:last-child
+  form
+  button[type="submit"]:active {
+  transform: translateY(0);
+}
+
+
+/* =========================================================
+   DEMO ACCOUNT
+   ========================================================= */
+
+.blueguard-auth-page
+  > div
+  > section:last-child
+  .bg-emerald-50 {
+  border: 1px solid #d2eadf !important;
+
+  background:
+    linear-gradient(
+      135deg,
+      #f0faf5,
+      #f7fcf9
+    ) !important;
+
+  border-radius: 14px !important;
+
+  box-shadow: none !important;
+}
+
+.blueguard-auth-page
+  > div
+  > section:last-child
+  .bg-emerald-50
+  svg {
+  color: #147957 !important;
+}
+
+.blueguard-auth-page
+  > div
+  > section:last-child
+  .bg-emerald-50
+  p {
+  color: #49675b !important;
+}
+
+.blueguard-auth-page
+  > div
+  > section:last-child
+  .bg-emerald-50
+  p.font-semibold {
+  color: #1d4435 !important;
+}
+
+.blueguard-auth-page
+  > div
+  > section:last-child
+  .bg-emerald-50
+  button {
+  color: #147957 !important;
+}
+
+.blueguard-auth-page
+  > div
+  > section:last-child
+  .bg-emerald-50
+  button:hover {
+  color: #0e6045 !important;
+}
+
+
+/* =========================================================
+   ERROR / SUCCESS
+   ========================================================= */
+
+.blueguard-auth-page
+  > div
+  > section:last-child
+  .bg-red-50 {
+  border-radius: 12px !important;
+}
+
+.blueguard-auth-page
+  > div
+  > section:last-child
+  .bg-emerald-50 {
+  color: #246149 !important;
+}
+
+
+/* =========================================================
+   REGISTER SECTION HEADINGS
+   ========================================================= */
+
+.blueguard-auth-page
+  > div
+  > section:last-child
+  h2 {
+  color: #20382e !important;
+
+  letter-spacing: -0.02em;
+}
+
+.blueguard-auth-page
+  > div
+  > section:last-child
+  h2
+  + p {
+  color: #87948e !important;
+}
+
+
+/* =========================================================
+   REGISTER HELP TEXT
+   ========================================================= */
+
+.blueguard-auth-page
+  > div
+  > section:last-child
+  .text-slate-400 {
+  color: #96a39d !important;
+}
+
+
+/* =========================================================
+   BOTTOM REGISTER LINK
+   ========================================================= */
+
+.blueguard-auth-page
+  > div
+  > section:last-child
+  button.text-emerald-600 {
+  color: #147957 !important;
+}
+
+.blueguard-auth-page
+  > div
+  > section:last-child
+  button.text-emerald-600:hover {
+  color: #0e6247 !important;
+}
+
+
+/* =========================================================
+   SUBTLE ENTRY ANIMATION
+   ========================================================= */
+
+.blueguard-auth-page > div {
+  animation: blueguard-auth-enter 0.65s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+@keyframes blueguard-auth-enter {
+  from {
+    opacity: 0;
+    transform: translateY(18px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+
+/* =========================================================
+   MOBILE
+   ========================================================= */
+
+@media (max-width: 1023px) {
+  .blueguard-auth-page > div {
+    grid-template-columns: 1fr;
+
+    min-height: auto;
+
+    border-radius: 24px !important;
+  }
+
+  .blueguard-auth-page
+    > div
+    > section:first-child {
+    min-height: auto;
+
+    padding: 32px !important;
+
+    border-right: none;
+
+    border-bottom: 1px solid #dce9e3;
+  }
+
+  .blueguard-auth-page
+    > div
+    > section:last-child {
+    max-height: none !important;
+
+    padding: 34px !important;
+  }
+}
+
+
+@media (max-width: 640px) {
+  .blueguard-auth-page {
+    padding: 12px !important;
+  }
+
+  .blueguard-auth-page > button {
+    padding: 8px 4px;
+
+    font-size: 13px;
+  }
+
+  .blueguard-auth-page
+    > div
+    > section:first-child {
+    padding: 22px !important;
+  }
+
+  .blueguard-auth-page
+    > div
+    > section:last-child {
+    padding: 24px !important;
+  }
+
+  .blueguard-auth-page
+    > div
+    > section:first-child
+    > div:nth-child(2) {
+    grid-template-columns: 1fr !important;
+  }
+
+  .blueguard-auth-page
+    > div
+    > section:first-child
+    > div:nth-child(2)
+    > div {
+    display: flex;
+
+    align-items: center;
+
+    gap: 10px;
+
+    text-align: left;
+  }
+
+  .blueguard-auth-page
+    > div
+    > section:first-child
+    > div:nth-child(2)
+    svg {
+    margin: 0 !important;
+  }
+}
+
+
+/* =========================================================
+   REDUCED MOTION
+   ========================================================= */
+
+@media (prefers-reduced-motion: reduce) {
+  .blueguard-auth-page > div {
+    animation: none;
+  }
+
+  .blueguard-auth-page * {
+    scroll-behavior: auto !important;
+
+    transition-duration: 0.001ms !important;
+  }
+}
+
+/* =========================================================
+   BLUEGUARD APP UI — READABILITY / TAILWIND COLOR SAFETY
+   ---------------------------------------------------------
+   Keep all existing landing/auth styling above intact.
+   These utility-level overrides only guarantee that the
+   dashboard/registry UI uses the BlueGuard slate + emerald
+   color system and does not become washed out by inherited
+   global styles.
+   ========================================================= */
+
+/* Main text hierarchy requested for the application UI */
+.text-slate-900 {
+  color: #0f172a !important;
+}
+
+.text-slate-800 {
+  color: #1e293b !important;
+}
+
+.text-slate-700 {
+  color: #334155 !important;
+}
+
+.text-slate-600 {
+  color: #475569 !important;
+}
+
+.text-slate-500 {
+  color: #64748b !important;
+}
+
+.text-slate-400 {
+  color: #94a3b8 !important;
+}
+
+/* BlueGuard green hierarchy */
+.text-emerald-700 {
+  color: #047857 !important;
+}
+
+.text-emerald-600 {
+  color: #059669 !important;
+}
+
+.text-emerald-500 {
+  color: #10b981 !important;
+}
+
+/* White text must remain white on green/ocean buttons/cards */
+.text-white {
+  color: #ffffff !important;
+}
+
+/* Form controls */
+input,
+textarea,
+select {
+  color: #0f172a;
+}
+
+input::placeholder,
+textarea::placeholder {
+  color: #64748b;
+  opacity: 1;
+}
+
+/* Buttons and links should not inherit the old landing-page text color */
+button,
+a {
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Keep SVG/icon colors controlled by Tailwind text utilities */
+svg.text-slate-900,
+svg.text-slate-800,
+svg.text-slate-700,
+svg.text-slate-600,
+svg.text-slate-500,
+svg.text-slate-400,
+svg.text-emerald-700,
+svg.text-emerald-600,
+svg.text-emerald-500 {
+  color: inherit !important;
+}
+
+/* =========================================================
+   APPLICATION SURFACE DEFAULTS
+   ========================================================= */
+
+html,
+body,
+#root {
+  min-height: 100%;
+}
+
+/* =========================================================
+   ACCESSIBILITY / FOCUS
+   ========================================================= */
+
+button:focus-visible,
+a:focus-visible,
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible {
+  outline: 2px solid #10b981;
+  outline-offset: 2px;
+}
+
+/* =========================================================
+   LEAFLET / MAP SAFETY
+   ---------------------------------------------------------
+   Do not let global application typography break Leaflet's
+   controls, popups or map buttons.
+   ========================================================= */
+
+.leaflet-container {
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system,
+    BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+.leaflet-control button,
+.leaflet-bar a {
+  color: #334155;
+}
+
+.leaflet-popup-content {
+  color: #334155;
+}
+
+/* =========================================================
+   REDUCED MOTION
+   ========================================================= */
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+  }
+}
+
+/* =========================================================
+   BLUEGUARD APPLICATION TEXT COLOR FIX
+   ---------------------------------------------------------
+   These explicit utility selectors guarantee that the
+   application pages use the intended readable palette,
+   even if an inherited/global rule is stronger elsewhere.
+   ========================================================= */
+
+.text-slate-900 {
+  color: #0f172a !important;
+}
+
+.text-slate-800 {
+  color: #1e293b !important;
+}
+
+.text-slate-700 {
+  color: #334155 !important;
+}
+
+.text-slate-600 {
+  color: #475569 !important;
+}
+
+.text-slate-500 {
+  color: #64748b !important;
+}
+
+.text-slate-400 {
+  color: #94a3b8 !important;
+}
+
+.text-emerald-700 {
+  color: #047857 !important;
+}
+
+.text-emerald-600 {
+  color: #059669 !important;
+}
+
+.text-emerald-500 {
+  color: #10b981 !important;
+}
+
+.text-white {
+  color: #ffffff !important;
+}
+
+/* Keep the intended light text inside the dark navigation. */
+.bg-ocean .text-slate-300 {
+  color: #cbd5e1 !important;
+}
+
+.bg-ocean .text-slate-400 {
+  color: #94a3b8 !important;
+}
+
+/* Application page typography */
+main h1,
+main h2,
+main h3,
+main h4 {
+  color: #0f172a;
+}
+
+main p {
+  color: #475569;
+}
+
+/* Explicit final values for the main application utilities. */
+main .text-slate-900 { color: #0f172a !important; }
+main .text-slate-800 { color: #1e293b !important; }
+main .text-slate-700 { color: #334155 !important; }
+main .text-slate-600 { color: #475569 !important; }
+main .text-slate-500 { color: #64748b !important; }
+main .text-slate-400 { color: #94a3b8 !important; }
+main .text-emerald-700 { color: #047857 !important; }
+main .text-emerald-600 { color: #059669 !important; }
+main .text-emerald-500 { color: #10b981 !important; }
+main .text-white { color: #ffffff !important; }
+
+/* Readable project-card content */
+main article h3,
+main section h1,
+main section h2,
+main section h3 {
+  color: #0f172a;
+}
+
+main article p,
+main section p {
+  color: #475569;
+}
+
+/* Preserve intentionally colored/status text. */
+main .text-slate-900,
+main .text-slate-800,
+main .text-slate-700,
+main .text-slate-600,
+main .text-slate-500,
+main .text-slate-400,
+main .text-emerald-700,
+main .text-emerald-600,
+main .text-emerald-500,
+main .text-white {
+  /* utility values intentionally applied above */
+}
