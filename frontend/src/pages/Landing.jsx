@@ -105,10 +105,11 @@ function GlobalStyles() {
         .workflow-row { flex-direction: column; align-items: stretch; gap: 28px !important; }
         .workflow-line { display: none; }
         .flow-step { flex-direction: row !important; text-align: left !important; gap: 18px !important; }
+        .hero-glass { padding: 48px 36px 38px !important; border-radius: 28px !important; }
       }
       @media (max-width: 640px) {
         .cap-badge { white-space: normal; }
-        .hero-glass { padding: 36px 22px 30px !important; }
+        .hero-glass { padding: 36px 20px 28px !important; border-radius: 22px !important; }
       }
     `}</style>
   );
@@ -281,30 +282,30 @@ function Hero() {
         <div style={{ position: "absolute", inset: 0, background: "radial-gradient(ellipse 62% 58% at 50% 46%, rgba(6,20,24,0.62) 0%, rgba(6,20,24,0.15) 60%, rgba(6,20,24,0) 100%)" }} />
       </div>
 
-      <div style={{ position: "relative", maxWidth: 980, margin: "0 auto", padding: "96px 24px 72px", textAlign: "center" }}>
+      <div style={{ position: "relative", maxWidth: 1040, margin: "0 auto", padding: "100px 24px 76px", textAlign: "center" }}>
 
         {/* Glass panel wraps the core message for strong contrast against the busy photo */}
         <div className="hero-glass" style={{
-          background: "linear-gradient(180deg, rgba(7,28,33,0.52), rgba(7,28,33,0.72))",
-          backdropFilter: "blur(24px)",
-          WebkitBackdropFilter: "blur(24px)",
-          border: "1px solid rgba(255,255,255,0.14)",
-          borderRadius: 32,
-          padding: "60px 64px 48px",
-          boxShadow: "0 35px 100px -10px rgba(0,0,0,0.5), 0 0 50px -10px rgba(28,122,120,0.25)",
+          background: "linear-gradient(180deg, rgba(7,28,33,0.56) 0%, rgba(7,28,33,0.76) 100%)",
+          backdropFilter: "blur(28px)",
+          WebkitBackdropFilter: "blur(28px)",
+          border: "1px solid rgba(255,255,255,0.16)",
+          borderRadius: 36,
+          padding: "68px 76px 54px",
+          boxShadow: "0 35px 110px -15px rgba(0,0,0,0.6), 0 0 60px -10px rgba(95,191,140,0.22), inset 0 1px 1px 0 rgba(255,255,255,0.18)",
           animation: "fadeUp 0.8s ease both",
         }}>
           {/* Wordmark with Realistic Organic Logo Animation */}
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 18, marginBottom: 20 }}>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 20, marginBottom: 22 }}>
             <div style={{ position: "relative", display: "flex", alignItems: "center", justifyContent: "center" }}>
               {/* Organic marine luminous aura glow ring */}
               <div style={{
                 position: "absolute",
-                inset: "-8px",
+                inset: "-10px",
                 borderRadius: "50%",
-                background: "radial-gradient(circle, rgba(95,191,140,0.45) 0%, rgba(28,122,120,0.15) 60%, transparent 80%)",
-                filter: "blur(8px)",
-                animation: "logoAuraPulse 4s ease-in-out infinite",
+                background: "radial-gradient(circle, rgba(95,191,140,0.48) 0%, rgba(28,122,120,0.18) 60%, transparent 80%)",
+                filter: "blur(10px)",
+                animation: "logoAuraPulse 4.5s ease-in-out infinite",
                 pointerEvents: "none",
               }} />
               <img
@@ -312,48 +313,48 @@ function Hero() {
                 alt="BlueGuard logo"
                 style={{
                   position: "relative",
-                  width: 66,
-                  height: 66,
+                  width: 74,
+                  height: 74,
                   objectFit: "contain",
                   animation: "marineOrganicFloat 6s cubic-bezier(0.45, 0.05, 0.55, 0.95) infinite",
                   willChange: "transform, filter",
                 }}
               />
             </div>
-            <h1 style={{ fontFamily: "var(--font-serif)", fontWeight: 700, fontSize: "clamp(2.9rem, 7.8vw, 5.2rem)", color: "#F7F8F4", letterSpacing: "-0.04em", lineHeight: 1, margin: 0, textShadow: "0 6px 30px rgba(0,0,0,0.4)" }}>BlueGuard</h1>
+            <h1 style={{ fontFamily: "var(--font-serif)", fontWeight: 700, fontSize: "clamp(3.1rem, 8.2vw, 5.5rem)", color: "#F7F8F4", letterSpacing: "-0.04em", lineHeight: 1, margin: 0, textShadow: "0 8px 36px rgba(0,0,0,0.45)" }}>BlueGuard</h1>
           </div>
 
           {/* Tagline */}
-          <p style={{ fontFamily: "var(--font-serif)", fontStyle: "italic", fontWeight: 600, fontSize: "clamp(1.35rem, 3.4vw, 2rem)", color: "#7FD9A8", letterSpacing: "-0.01em", marginBottom: 22 }}>
+          <p style={{ fontFamily: "var(--font-serif)", fontStyle: "italic", fontWeight: 600, fontSize: "clamp(1.35rem, 3.2vw, 2.1rem)", color: "#7FD9A8", letterSpacing: "-0.01em", marginBottom: 24 }}>
             "Verify Before You Trust"
           </p>
 
-          <p style={{ fontSize: "1.08rem", color: "rgba(216,230,231,0.92)", lineHeight: 1.85, maxWidth: 620, margin: "0 auto 38px" }}>
+          <p style={{ fontSize: "1.1rem", color: "rgba(225,238,240,0.94)", lineHeight: 1.85, maxWidth: 680, margin: "0 auto 40px" }}>
             A blockchain-anchored platform for registering, monitoring, and verifying blue carbon
             restoration projects, from mangrove coastlines to seagrass meadows, with satellite
             intelligence and immutable on-chain records.
           </p>
 
           {/* CTAs */}
-          <div style={{ display: "flex", justifyContent: "center", gap: 14, flexWrap: "wrap" }}>
-            <Link to="/login" style={{ background: "#1C7A78", color: "#fff", borderRadius: 10, padding: "13px 28px", fontWeight: 600, fontSize: "0.95rem", textDecoration: "none", boxShadow: "0 4px 24px rgba(28,122,120,0.5)", transition: "background 0.2s, box-shadow 0.2s" }}
-              onMouseEnter={e => { e.currentTarget.style.background = "#12545A"; e.currentTarget.style.boxShadow = "0 6px 32px rgba(28,122,120,0.65)"; }}
-              onMouseLeave={e => { e.currentTarget.style.background = "#1C7A78"; e.currentTarget.style.boxShadow = "0 4px 24px rgba(28,122,120,0.5)"; }}>
+          <div style={{ display: "flex", justifyContent: "center", gap: 16, flexWrap: "wrap" }}>
+            <Link to="/login" style={{ background: "linear-gradient(135deg, #1C7A78 0%, #12545A 100%)", color: "#fff", borderRadius: 12, padding: "14px 32px", fontWeight: 600, fontSize: "0.98rem", textDecoration: "none", boxShadow: "0 6px 28px rgba(28,122,120,0.55), inset 0 1px 1px rgba(255,255,255,0.2)", transition: "all 0.25s ease" }}
+              onMouseEnter={e => { e.currentTarget.style.transform = "translateY(-2px)"; e.currentTarget.style.boxShadow = "0 8px 34px rgba(28,122,120,0.7), inset 0 1px 1px rgba(255,255,255,0.3)"; }}
+              onMouseLeave={e => { e.currentTarget.style.transform = "none"; e.currentTarget.style.boxShadow = "0 6px 28px rgba(28,122,120,0.55), inset 0 1px 1px rgba(255,255,255,0.2)"; }}>
               Register a Project
             </Link>
-            <Link to="/login" style={{ background: "rgba(255,255,255,0.08)", color: "#DCE8E9", border: "1px solid rgba(255,255,255,0.2)", borderRadius: 10, padding: "13px 28px", fontWeight: 500, fontSize: "0.95rem", textDecoration: "none", transition: "background 0.2s" }}
-              onMouseEnter={e => (e.currentTarget.style.background = "rgba(255,255,255,0.14)")}
-              onMouseLeave={e => (e.currentTarget.style.background = "rgba(255,255,255,0.08)")}>
-              Explore the Platform →
+            <Link to="/login" style={{ background: "rgba(255,255,255,0.08)", color: "#DCE8E9", border: "1px solid rgba(255,255,255,0.22)", borderRadius: 12, padding: "14px 32px", fontWeight: 500, fontSize: "0.98rem", textDecoration: "none", transition: "all 0.25s ease" }}
+              onMouseEnter={e => { e.currentTarget.style.background = "rgba(255,255,255,0.15)"; e.currentTarget.style.transform = "translateY(-2px)"; }}
+              onMouseLeave={e => { e.currentTarget.style.background = "rgba(255,255,255,0.08)"; e.currentTarget.style.transform = "none"; }}>
+              Explore the Platform
             </Link>
           </div>
         </div>
 
         {/* Capability badges */}
-        <div className="hero-caps" style={{ display: "flex", justifyContent: "center", gap: 10, marginTop: 40, marginBottom: 52, flexWrap: "wrap" }}>
+        <div className="hero-caps" style={{ display: "flex", justifyContent: "center", gap: 12, marginTop: 44, marginBottom: 56, flexWrap: "wrap" }}>
           {caps.map(c => (
-            <div key={c.label} className="cap-badge" style={{ display: "flex", alignItems: "center", gap: 8, background: "rgba(7,28,33,0.55)", backdropFilter: "blur(6px)", border: "1px solid rgba(255,255,255,0.12)", borderRadius: 10, padding: "10px 16px", fontSize: "0.78rem", fontWeight: 500, color: "#CFE1E3", whiteSpace: "nowrap" }}>
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#5FBF8C" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d={c.icon} /></svg>
+            <div key={c.label} className="cap-badge" style={{ display: "flex", alignItems: "center", gap: 8, background: "rgba(7,28,33,0.65)", backdropFilter: "blur(10px)", border: "1px solid rgba(255,255,255,0.14)", borderRadius: 12, padding: "11px 18px", fontSize: "0.82rem", fontWeight: 500, color: "#CFE1E3", whiteSpace: "nowrap" }}>
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#5FBF8C" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d={c.icon} /></svg>
               {c.label}
             </div>
           ))}
