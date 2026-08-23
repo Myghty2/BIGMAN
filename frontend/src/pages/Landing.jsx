@@ -411,7 +411,7 @@ function PhotoBand() {
   );
 }
 
-// ── Stats Banner (framed + scroll-triggered count-up) ────────────────────────
+// ── Stats Banner (exact open layout matching reference) ──────────────────────
 function StatCard({ stat }) {
   const ref = useRef(null);
   const visible = useOnScreen(ref, "-60px");
@@ -424,38 +424,58 @@ function StatCard({ stat }) {
   return (
     <div
       ref={ref}
-      className="stat-frame"
       style={{
         opacity: visible ? 1 : 0,
-        transform: visible ? "translateY(0)" : "translateY(18px)",
+        transform: visible ? "translateY(0)" : "translateY(16px)",
         transition: "opacity 0.6s ease, transform 0.6s ease",
         textAlign: "center",
       }}
     >
-      <div className="stat-icon-badge">
-        <IconSvg path={stat.icon} size={19} color="#1C7A78" />
-      </div>
-      <div style={{ display: "flex", alignItems: "baseline", justifyContent: "center", gap: 4 }}>
-        <span style={{ fontFamily: "var(--font-serif)", fontWeight: 700, fontSize: "2.3rem", color: "#0B2B33", letterSpacing: "-0.03em", fontVariantNumeric: "tabular-nums" }}>
+      <div style={{ display: "flex", alignItems: "baseline", justifyContent: "center", gap: 6 }}>
+        <span style={{
+          fontFamily: "var(--font-serif)",
+          fontWeight: 700,
+          fontSize: "clamp(2.8rem, 4.2vw, 3.8rem)",
+          color: "#0B2B33",
+          letterSpacing: "-0.03em",
+          lineHeight: 1,
+          fontVariantNumeric: "tabular-nums"
+        }}>
           {displayNum}{suffixLetter}
         </span>
-        <span style={{ fontFamily: "var(--font-mono)", fontSize: "0.75rem", color: "#1C7A78", fontWeight: 500 }}>{stat.unit}</span>
+        <span style={{
+          fontFamily: "var(--font-sans)",
+          fontSize: "1.1rem",
+          color: "#1C7A78",
+          fontWeight: 600,
+          letterSpacing: "0.01em"
+        }}>
+          {stat.unit}
+        </span>
       </div>
-      <p style={{ fontFamily: "var(--font-sans)", fontSize: "0.8rem", color: "#6A9099", marginTop: 6, fontWeight: 500 }}>{stat.label}</p>
+      <p style={{
+        fontFamily: "var(--font-sans)",
+        fontSize: "0.95rem",
+        color: "#54767D",
+        fontWeight: 500,
+        margin: "12px 0 0"
+      }}>
+        {stat.label}
+      </p>
     </div>
   );
 }
 
 function StatsBanner() {
   const stats = [
-    { value: "2.4M", unit: "ha", label: "Registered site area", icon: PATHS.map },
-    { value: "187", unit: "k tCO₂e", label: "Credits verified on-chain", icon: PATHS.shieldCheck },
-    { value: "94", unit: "%", label: "Satellite cross-match accuracy", icon: PATHS.satellite },
-    { value: "12", unit: "chains", label: "Blockchain anchors active", icon: PATHS.link },
+    { value: "2.4M", unit: "ha", label: "Registered site area" },
+    { value: "187", unit: "k tCO₂e", label: "Credits verified on-chain" },
+    { value: "94", unit: "%", label: "Satellite cross-match accuracy" },
+    { value: "12", unit: "chains", label: "Blockchain anchors active" },
   ];
   return (
-    <section style={{ background: "#F3EEE1", borderTop: "1px solid #E7DEC7", borderBottom: "1px solid #E7DEC7", padding: "56px 24px" }}>
-      <div style={{ maxWidth: 1280, margin: "0 auto", display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: 22 }}>
+    <section style={{ background: "#F3EEE1", borderTop: "1px solid #E7DEC7", borderBottom: "1px solid #E7DEC7", padding: "64px 24px 72px" }}>
+      <div style={{ maxWidth: 1280, margin: "0 auto", display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: 32 }}>
         {stats.map(s => <StatCard key={s.label} stat={s} />)}
       </div>
     </section>
