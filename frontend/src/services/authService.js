@@ -205,3 +205,38 @@ export function isAuthenticated() {
   return getCurrentUser() !== null;
 
 }
+
+
+// Login admin / verifier
+export async function loginAdmin(email, password) {
+  const normalizedEmail = email.trim().toLowerCase();
+
+  if (
+    (normalizedEmail === "admin@blueguard.org" ||
+      normalizedEmail === "admin@blueguard.io" ||
+      normalizedEmail === "verifier@blueguard.io" ||
+      normalizedEmail === "verifier@blueguard.org") &&
+    (password === "admin123" ||
+      password === "verifier123" ||
+      password === "BlueGuard2026!" ||
+      password === "admin")
+  ) {
+    const adminData = {
+      role: "admin",
+      uid: "ADMIN-001",
+      email: normalizedEmail,
+      name: "BlueGuard Administrator",
+    };
+
+    return {
+      success: true,
+      admin: adminData,
+      message: "Admin authenticated successfully.",
+    };
+  }
+
+  return {
+    success: false,
+    message: "Invalid administrator credentials. Authorized personnel only.",
+  };
+}

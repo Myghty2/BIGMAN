@@ -152,7 +152,7 @@ export default function Layout() {
         </div>
       </aside>
 
-      {/* Main Content Area (Clean, Full-Height, No Redundant Top Nav) */}
+      {/* Main Content Area */}
       <main className="min-h-screen flex-1 lg:ml-64 overflow-x-hidden">
         <Outlet />
       </main>

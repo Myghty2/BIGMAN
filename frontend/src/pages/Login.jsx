@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import greenWater from "../assets/greenWater.jpg";
 import {
@@ -9,11 +9,8 @@ import {
   ChevronRight,
   Eye,
   EyeOff,
-  Globe,
   KeyRound,
   LockKeyhole,
-  MapPin,
-  Phone,
   RefreshCw,
   ShieldCheck,
   Sparkles,
@@ -23,28 +20,45 @@ import {
 } from "lucide-react";
 import {
   loginOrganization,
+  loginAdmin,
   registerOrganization,
 } from "../services/authService";
 
 export default function Login() {
   const navigate = useNavigate();
 
-  const [accessMode, setAccessMode] = useState("organization"); // 'organization' | 'admin'
-  const [mode, setMode] = useState("login"); // 'login' | 'register'
+  /*
+   * =========================================================
+   * ACCESS MODES
+   * =========================================================
+   *
+   * organization = NGO / company / restoration organization
+   * admin        = BlueGuard administration + verification
+   */
+  const [accessMode, setAccessMode] = useState("organization");
 
-  // Organization Login State
+  /*
+   * =========================================================
+   * ORGANIZATION LOGIN / REGISTER
+   * =========================================================
+   */
+  const [mode, setMode] = useState("login");
+
+  /*
+   * =========================================================
+   * FORMS STATE
+   * =========================================================
+   */
   const [loginForm, setLoginForm] = useState({
     email: "",
     password: "",
   });
 
-  // Admin Login State
   const [adminForm, setAdminForm] = useState({
     email: "",
     password: "",
   });
 
-  // Organization Registration State
   const [registerForm, setRegisterForm] = useState({
     organizationName: "",
     organizationType: "NGO",
@@ -60,98 +74,178 @@ export default function Login() {
     confirmPassword: "",
   });
 
-  const [showOrgPassword, setShowOrgPassword] = useState(false);
+  /*
+   * =========================================================
+   * PASSWORD VISIBILITY & UI STATE
+   * =========================================================
+   */
   const [showAdminPassword, setShowAdminPassword] = useState(false);
+  const [showOrgPassword, setShowOrgPassword] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const [loading, setLoading] = useState(false);
 
-  const clearMessages = () => {
+  /*
+   * =========================================================
+   * HELPERS
+   * =========================================================
+   */
+  function clearMessages() {
     setError("");
     setSuccess("");
-  };
+  }
 
-  const switchAccessMode = (newMode) => {
-    setAccessMode(newMode);
+  function switchAccessMode(modeName) {
+    setAccessMode(modeName);
     clearMessages();
-  };
+    setLoading(false);
 
-  // Handlers for Org Login
-  const handleOrgLoginSubmit = (e) => {
-    e.preventDefault();
+    if (modeName === "admin") {
+      setMode("login");
+    }
+  }
+
+  function handleLoginChange(event) {
+    const { name, value } = event.target;
+    setLoginForm((previous) => ({
+      ...previous,
+      [name]: value,
+    }));
+  }
+
+  function handleRegisterChange(event) {
+    const { name, value } = event.target;
+    setRegisterForm((previous) => ({
+      ...previous,
+      [name]: value,
+    }));
+  }
+
+  function handleAdminChange(event) {
+    const { name, value } = event.target;
+    setAdminForm((previous) => ({
+      ...previous,
+      [name]: value,
+    }));
+  }
+
+  /*
+   * =========================================================
+   * ORGANIZATION LOGIN (Firebase / Backend Auth)
+   * =========================================================
+   */
+  async function handleLoginSubmit(event) {
+    event.preventDefault();
     clearMessages();
-    setLoading(true);
 
     const email = loginForm.email.trim();
-    const password = loginForm.password;
 
-    setTimeout(() => {
-      const result = loginOrganization(email, password);
-      setLoading(false);
+    if (!email || !loginForm.password) {
+      setError("Enter your organization email and password.");
+      return;
+    }
+
+    setLoading(true);
+
+    try {
+      const result = await loginOrganization(email, loginForm.password);
 
       if (!result.success) {
-        if (email.toLowerCase().includes("admin") || email.toLowerCase().includes("verifier")) {
-          setError("This account is for the Verifier portal. Please switch to the Verifier tab above.");
-        } else {
-          setError(result.message || "Invalid email or password. You can also click Auto-fill Demo below.");
-        }
+        setError(result.message || "Invalid organization email or password.");
         return;
       }
 
+      /*
+       * Session persistence
+       */
       localStorage.setItem(
         "blueguard_session",
         JSON.stringify({
           role: "organization",
-          email: email,
+          uid: result.organization?.uid || result.organization?.id || "",
+          email: result.organization?.officialEmail || email,
+          name: result.organization?.organizationName || "",
           loggedInAt: new Date().toISOString(),
         })
       );
+
       localStorage.removeItem("blueguard_admin_session");
 
-      setSuccess("Signing in... Redirecting to dashboard.");
+      setSuccess("Organization authenticated. Opening workspace...");
+
       setTimeout(() => {
         navigate("/dashboard");
-      }, 600);
-    }, 400);
-  };
+      }, 650);
+    } catch (err) {
+      console.error("Organization login failed:", err);
+      setError("Unable to sign in. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  }
 
-  // Handlers for Admin Login
-  const handleAdminLoginSubmit = (e) => {
-    e.preventDefault();
+  /*
+   * =========================================================
+   * ADMIN LOGIN (Firebase / Backend Auth)
+   * =========================================================
+   */
+  async function handleAdminSubmit(event) {
+    event.preventDefault();
     clearMessages();
-    setLoading(true);
 
-    const email = adminForm.email.trim();
+    const email = adminForm.email.trim().toLowerCase();
     const password = adminForm.password;
 
-    setTimeout(() => {
-      setLoading(false);
-      if (
-        (email.toLowerCase() === "admin@blueguard.io" || email.toLowerCase() === "verifier@blueguard.io") &&
-        (password === "admin123" || password === "verifier123" || password === "BlueGuard2026!")
-      ) {
-        localStorage.setItem(
-          "blueguard_admin_session",
-          JSON.stringify({
-            role: "admin",
-            email: email,
-            name: "BlueGuard Verifier",
-            loggedInAt: new Date().toISOString(),
-          })
-        );
-        setSuccess("Verifier authorized. Redirecting to admin panel...");
-        setTimeout(() => {
-          navigate("/admin");
-        }, 600);
-      } else {
-        setError("Invalid credentials. Try: admin@blueguard.io / admin123");
-      }
-    }, 400);
-  };
+    if (!email || !password) {
+      setError("Enter your administrator email and password.");
+      return;
+    }
 
-  // Handlers for Org Registration
-  const handleRegisterSubmit = (e) => {
-    e.preventDefault();
+    setLoading(true);
+
+    try {
+      const result = await loginAdmin(email, password);
+
+      if (!result.success) {
+        setError(result.message || "Invalid administrator credentials.");
+        return;
+      }
+
+      localStorage.setItem(
+        "blueguard_admin_session",
+        JSON.stringify({
+          role: result.admin?.role || "admin",
+          uid: result.admin?.uid || "",
+          email: result.admin?.email || email,
+          name: result.admin?.name || "BlueGuard Administrator",
+          loggedInAt: new Date().toISOString(),
+        })
+      );
+
+      localStorage.removeItem("blueguard_session");
+
+      setSuccess(
+        `Welcome, ${result.admin?.name || "Administrator"}. Opening control center...`
+      );
+
+      setTimeout(() => {
+        navigate("/admin");
+      }, 650);
+    } catch (err) {
+      console.error("Admin login failed:", err);
+      setError("Unable to authenticate administrator. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  /*
+   * =========================================================
+   * ORGANIZATION REGISTRATION (Firebase / Backend Auth)
+   * =========================================================
+   */
+  async function handleRegisterSubmit(event) {
+    event.preventDefault();
     clearMessages();
 
     if (registerForm.password !== registerForm.confirmPassword) {
@@ -160,29 +254,57 @@ export default function Login() {
     }
 
     if (registerForm.password.length < 6) {
-      setError("Password must be at least 6 characters.");
+      setError("Password must contain at least 6 characters.");
+      return;
+    }
+
+    if (!registerForm.officialEmail.trim()) {
+      setError("Please enter the organization's official email.");
       return;
     }
 
     setLoading(true);
 
-    setTimeout(() => {
-      const result = registerOrganization(registerForm);
-      setLoading(false);
+    try {
+      const result = await registerOrganization(registerForm);
 
       if (!result.success) {
-        setError(result.message);
+        setError(result.message || "Registration failed. Please try again.");
         return;
       }
 
-      setSuccess("Account created successfully! You can now sign in.");
+      setSuccess("Organization registered successfully. You can now sign in.");
+
       setLoginForm({
         email: registerForm.officialEmail,
-        password: registerForm.password,
+        password: "",
       });
-      setMode("login");
-    }, 500);
-  };
+
+      setRegisterForm({
+        organizationName: "",
+        organizationType: "NGO",
+        registrationNumber: "",
+        officialEmail: "",
+        phone: "",
+        representativeName: "",
+        designation: "",
+        registeredAddress: "",
+        state: "",
+        website: "",
+        password: "",
+        confirmPassword: "",
+      });
+
+      setTimeout(() => {
+        setMode("login");
+      }, 1200);
+    } catch (err) {
+      console.error("Organization registration failed:", err);
+      setError("Something went wrong while registering the organization.");
+    } finally {
+      setLoading(false);
+    }
+  }
 
   const quickFillOrg = () => {
     setLoginForm({
@@ -262,7 +384,6 @@ export default function Login() {
 
         {/* Big Glassmorphism Card with Gradient Border Hover */}
         <div className="rounded-[32px] border border-white/15 bg-slate-900/90 p-7 sm:p-10 md:p-12 shadow-2xl backdrop-blur-2xl transition-all duration-300 hover:border-emerald-500/40 hover:shadow-emerald-950/30">
-          
           {/* Brand Logo & Header */}
           <div className="text-center mb-8">
             <Link to="/" className="inline-flex items-center justify-center gap-3 mb-4 group">
@@ -372,7 +493,7 @@ export default function Login() {
               FORM 1: ORGANIZATION LOGIN
               ========================================================= */}
           {accessMode === "organization" && mode === "login" && (
-            <form onSubmit={handleOrgLoginSubmit} className="space-y-4">
+            <form onSubmit={handleLoginSubmit} className="space-y-4">
               <div>
                 <label className="block text-xs font-bold uppercase tracking-wider text-slate-300 mb-2">
                   Official Email Address
@@ -381,9 +502,10 @@ export default function Login() {
                   <UserRound size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-emerald-400 transition" />
                   <input
                     type="email"
+                    name="email"
                     required
                     value={loginForm.email}
-                    onChange={(e) => setLoginForm({ ...loginForm, email: e.target.value })}
+                    onChange={handleLoginChange}
                     placeholder="contact@mumbaicoastal.org"
                     className="w-full rounded-2xl border border-slate-700/80 bg-slate-950/80 py-3.5 pl-11 pr-4 text-sm sm:text-base text-white placeholder:text-slate-500 focus:border-emerald-400 focus:ring-4 focus:ring-emerald-500/20 focus:outline-none transition-all duration-200"
                   />
@@ -398,9 +520,10 @@ export default function Login() {
                   <LockKeyhole size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-emerald-400 transition" />
                   <input
                     type={showOrgPassword ? "text" : "password"}
+                    name="password"
                     required
                     value={loginForm.password}
-                    onChange={(e) => setLoginForm({ ...loginForm, password: e.target.value })}
+                    onChange={handleLoginChange}
                     placeholder="••••••••••••"
                     className="w-full rounded-2xl border border-slate-700/80 bg-slate-950/80 py-3.5 pl-11 pr-12 text-sm sm:text-base text-white placeholder:text-slate-500 focus:border-emerald-400 focus:ring-4 focus:ring-emerald-500/20 focus:outline-none transition-all duration-200"
                   />
@@ -460,9 +583,10 @@ export default function Login() {
                   <Building2 size={17} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
                   <input
                     type="text"
+                    name="organizationName"
                     required
                     value={registerForm.organizationName}
-                    onChange={(e) => setRegisterForm({ ...registerForm, organizationName: e.target.value })}
+                    onChange={handleRegisterChange}
                     placeholder="e.g. Mangrove Ecological Foundation"
                     className="w-full rounded-xl border border-slate-700 bg-slate-950/80 py-2.5 pl-10 pr-4 text-sm text-white placeholder:text-slate-500 focus:border-emerald-400 focus:outline-none transition"
                   />
@@ -475,14 +599,16 @@ export default function Login() {
                     Entity Type *
                   </label>
                   <select
+                    name="organizationType"
                     value={registerForm.organizationType}
-                    onChange={(e) => setRegisterForm({ ...registerForm, organizationType: e.target.value })}
+                    onChange={handleRegisterChange}
                     className="w-full rounded-xl border border-slate-700 bg-slate-950/80 px-3 py-2.5 text-sm text-white focus:border-emerald-400 focus:outline-none transition"
                   >
-                    <option>NGO / Non-Profit</option>
-                    <option>Restoration Enterprise</option>
-                    <option>Government Agency</option>
-                    <option>Academic / Research</option>
+                    <option value="NGO">NGO / Non-Profit</option>
+                    <option value="Government Body">Government Body</option>
+                    <option value="Community Group">Community Group</option>
+                    <option value="Corporate">Corporate</option>
+                    <option value="Research Institute">Research Institute</option>
                   </select>
                 </div>
 
@@ -492,10 +618,11 @@ export default function Login() {
                   </label>
                   <input
                     type="text"
+                    name="registrationNumber"
                     required
                     value={registerForm.registrationNumber}
-                    onChange={(e) => setRegisterForm({ ...registerForm, registrationNumber: e.target.value })}
-                    placeholder="REG-IN-2024-884"
+                    onChange={handleRegisterChange}
+                    placeholder="NGO Darpan ID / CIN"
                     className="w-full rounded-xl border border-slate-700 bg-slate-950/80 px-3.5 py-2.5 text-sm text-white placeholder:text-slate-500 focus:border-emerald-400 focus:outline-none transition"
                   />
                 </div>
@@ -508,9 +635,10 @@ export default function Login() {
                   </label>
                   <input
                     type="email"
+                    name="officialEmail"
                     required
                     value={registerForm.officialEmail}
-                    onChange={(e) => setRegisterForm({ ...registerForm, officialEmail: e.target.value })}
+                    onChange={handleRegisterChange}
                     placeholder="contact@org.org"
                     className="w-full rounded-xl border border-slate-700 bg-slate-950/80 px-3.5 py-2.5 text-sm text-white placeholder:text-slate-500 focus:border-emerald-400 focus:outline-none transition"
                   />
@@ -522,10 +650,11 @@ export default function Login() {
                   </label>
                   <input
                     type="text"
+                    name="phone"
                     required
                     value={registerForm.phone}
-                    onChange={(e) => setRegisterForm({ ...registerForm, phone: e.target.value })}
-                    placeholder="+91 98200 12345"
+                    onChange={handleRegisterChange}
+                    placeholder="+91 98765 43210"
                     className="w-full rounded-xl border border-slate-700 bg-slate-950/80 px-3.5 py-2.5 text-sm text-white placeholder:text-slate-500 focus:border-emerald-400 focus:outline-none transition"
                   />
                 </div>
@@ -538,9 +667,10 @@ export default function Login() {
                   </label>
                   <input
                     type="text"
+                    name="representativeName"
                     required
                     value={registerForm.representativeName}
-                    onChange={(e) => setRegisterForm({ ...registerForm, representativeName: e.target.value })}
+                    onChange={handleRegisterChange}
                     placeholder="Dr. Ramesh Patel"
                     className="w-full rounded-xl border border-slate-700 bg-slate-950/80 px-3.5 py-2.5 text-sm text-white placeholder:text-slate-500 focus:border-emerald-400 focus:outline-none transition"
                   />
@@ -548,14 +678,70 @@ export default function Login() {
 
                 <div>
                   <label className="block text-xs font-bold uppercase tracking-wider text-slate-300 mb-1.5">
-                    Designation
+                    Designation *
                   </label>
                   <input
                     type="text"
+                    name="designation"
+                    required
                     value={registerForm.designation}
-                    onChange={(e) => setRegisterForm({ ...registerForm, designation: e.target.value })}
-                    placeholder="Lead Director"
+                    onChange={handleRegisterChange}
+                    placeholder="Director"
                     className="w-full rounded-xl border border-slate-700 bg-slate-950/80 px-3.5 py-2.5 text-sm text-white placeholder:text-slate-500 focus:border-emerald-400 focus:outline-none transition"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold uppercase tracking-wider text-slate-300 mb-1.5">
+                  Registered Address *
+                </label>
+                <textarea
+                  name="registeredAddress"
+                  required
+                  value={registerForm.registeredAddress}
+                  onChange={handleRegisterChange}
+                  rows="2"
+                  placeholder="Registered organization address"
+                  className="w-full resize-none rounded-xl border border-slate-700 bg-slate-950/80 px-3.5 py-2 text-sm text-white placeholder:text-slate-500 focus:border-emerald-400 focus:outline-none transition"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-bold uppercase tracking-wider text-slate-300 mb-1.5">
+                    State *
+                  </label>
+                  <select
+                    name="state"
+                    required
+                    value={registerForm.state}
+                    onChange={handleRegisterChange}
+                    className="w-full rounded-xl border border-slate-700 bg-slate-950/80 px-3 py-2 text-sm text-white focus:border-emerald-400 focus:outline-none transition"
+                  >
+                    <option value="">Select state</option>
+                    <option value="Maharashtra">Maharashtra</option>
+                    <option value="West Bengal">West Bengal</option>
+                    <option value="Tamil Nadu">Tamil Nadu</option>
+                    <option value="Gujarat">Gujarat</option>
+                    <option value="Kerala">Kerala</option>
+                    <option value="Odisha">Odisha</option>
+                    <option value="Andhra Pradesh">Andhra Pradesh</option>
+                    <option value="Other">Other</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold uppercase tracking-wider text-slate-300 mb-1.5">
+                    Website (Optional)
+                  </label>
+                  <input
+                    type="url"
+                    name="website"
+                    value={registerForm.website}
+                    onChange={handleRegisterChange}
+                    placeholder="https://organization.org"
+                    className="w-full rounded-xl border border-slate-700 bg-slate-950/80 px-3.5 py-2 text-sm text-white placeholder:text-slate-500 focus:border-emerald-400 focus:outline-none transition"
                   />
                 </div>
               </div>
@@ -567,10 +753,11 @@ export default function Login() {
                   </label>
                   <input
                     type="password"
+                    name="password"
                     required
                     value={registerForm.password}
-                    onChange={(e) => setRegisterForm({ ...registerForm, password: e.target.value })}
-                    placeholder="••••••••"
+                    onChange={handleRegisterChange}
+                    placeholder="Min. 6 chars"
                     className="w-full rounded-xl border border-slate-700 bg-slate-950/80 px-3.5 py-2.5 text-sm text-white placeholder:text-slate-500 focus:border-emerald-400 focus:outline-none transition"
                   />
                 </div>
@@ -581,10 +768,11 @@ export default function Login() {
                   </label>
                   <input
                     type="password"
+                    name="confirmPassword"
                     required
                     value={registerForm.confirmPassword}
-                    onChange={(e) => setRegisterForm({ ...registerForm, confirmPassword: e.target.value })}
-                    placeholder="••••••••"
+                    onChange={handleRegisterChange}
+                    placeholder="Repeat password"
                     className="w-full rounded-xl border border-slate-700 bg-slate-950/80 px-3.5 py-2.5 text-sm text-white placeholder:text-slate-500 focus:border-emerald-400 focus:outline-none transition"
                   />
                 </div>
@@ -614,7 +802,7 @@ export default function Login() {
               FORM 3: VERIFIER / ADMIN LOGIN
               ========================================================= */}
           {accessMode === "admin" && (
-            <form onSubmit={handleAdminLoginSubmit} className="space-y-4">
+            <form onSubmit={handleAdminSubmit} className="space-y-4">
               <div>
                 <label className="block text-xs font-bold uppercase tracking-wider text-slate-300 mb-2">
                   Verifier Official Email
@@ -623,9 +811,10 @@ export default function Login() {
                   <KeyRound size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-emerald-400 transition" />
                   <input
                     type="email"
+                    name="email"
                     required
                     value={adminForm.email}
-                    onChange={(e) => setAdminForm({ ...adminForm, email: e.target.value })}
+                    onChange={handleAdminChange}
                     placeholder="admin@blueguard.io"
                     className="w-full rounded-2xl border border-slate-700/80 bg-slate-950/80 py-3.5 pl-11 pr-4 text-sm sm:text-base text-white placeholder:text-slate-500 focus:border-emerald-400 focus:ring-4 focus:ring-emerald-500/20 focus:outline-none transition-all duration-200"
                   />
@@ -640,9 +829,10 @@ export default function Login() {
                   <LockKeyhole size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-emerald-400 transition" />
                   <input
                     type={showAdminPassword ? "text" : "password"}
+                    name="password"
                     required
                     value={adminForm.password}
-                    onChange={(e) => setAdminForm({ ...adminForm, password: e.target.value })}
+                    onChange={handleAdminChange}
                     placeholder="••••••••••••"
                     className="w-full rounded-2xl border border-slate-700/80 bg-slate-950/80 py-3.5 pl-11 pr-12 text-sm sm:text-base text-white placeholder:text-slate-500 focus:border-emerald-400 focus:ring-4 focus:ring-emerald-500/20 focus:outline-none transition-all duration-200"
                   />
