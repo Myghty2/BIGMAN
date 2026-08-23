@@ -272,12 +272,6 @@ function Hero() {
           boxShadow: "0 30px 90px rgba(0,0,0,0.4)",
           animation: "fadeUp 0.8s ease both",
         }}>
-          {/* Pill */}
-          <div style={{ display: "inline-flex", alignItems: "center", gap: 8, background: "rgba(28,122,120,0.2)", border: "1px solid rgba(95,191,140,0.45)", color: "#8FE0BB", borderRadius: 100, padding: "5px 14px", fontSize: "0.72rem", fontWeight: 500, letterSpacing: "0.08em", textTransform: "uppercase", fontFamily: "var(--font-mono)", marginBottom: 28 }}>
-            <img src={LOGO_SRC} alt="" style={{ width: 14, height: 14, objectFit: "contain" }} />
-            Blue Carbon Registry & MRV, on-chain
-          </div>
-
           {/* Wordmark */}
           <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 16, marginBottom: 18 }}>
             <img src={LOGO_SRC} alt="BlueGuard logo" style={{ width: 58, height: 58, objectFit: "contain", filter: "drop-shadow(0 4px 18px rgba(95,191,140,0.35))", animation: "floatSlow 5s ease-in-out infinite" }} />
@@ -291,7 +285,7 @@ function Hero() {
 
           <p style={{ fontSize: "1.05rem", color: "rgba(216,230,231,0.92)", lineHeight: 1.8, maxWidth: 580, margin: "0 auto 36px" }}>
             A blockchain-anchored platform for registering, monitoring, and verifying blue carbon
-            restoration projects — from mangrove coastlines to seagrass meadows — with satellite
+            restoration projects, from mangrove coastlines to seagrass meadows, with satellite
             intelligence and immutable on-chain records.
           </p>
 
@@ -552,7 +546,7 @@ function Workflow() {
     { n: "01", title: "Register the Site", desc: "Field teams submit GPS boundaries, species mix, and baseline photos for a mangrove or seagrass site.", icon: PATHS.register },
     { n: "02", title: "Satellite Monitoring", desc: "Google Earth Engine pulls a fresh pass every 5 days and tracks NDVI canopy change automatically.", icon: PATHS.satellite },
     { n: "03", title: "AI Cross-Verification", desc: "Biomass models cross-match satellite signal against field evidence and flag anomalies for review.", icon: PATHS.brain },
-    { n: "04", title: "Blockchain Anchoring", desc: "Every verified evidence bundle is hashed and anchored on-chain — immutable and publicly auditable.", icon: PATHS.chainLink },
+    { n: "04", title: "Blockchain Anchoring", desc: "Every verified evidence bundle is hashed and anchored on-chain, immutable and publicly auditable.", icon: PATHS.chainLink },
     { n: "05", title: "Credits Issued", desc: "Verified carbon credits are minted to the registry, ready to trade, retire, or report against.", icon: PATHS.coin },
   ];
   return (
@@ -564,7 +558,7 @@ function Workflow() {
             How a claim becomes<br />a verified credit.
           </h2>
           <p style={{ color: "#7AAAB1", fontSize: "1rem", lineHeight: 1.7, margin: 0 }}>
-            Five checkpoints stand between a planting claim and a tradable credit — every one of them logged and auditable.
+            Five checkpoints stand between a planting claim and a tradable credit, every one of them logged and auditable.
           </p>
         </div>
 
@@ -588,10 +582,10 @@ function Workflow() {
 // ── About Us ───────────────────────────────────────────────────────────────────
 function About() {
   const pillars = [
-    { title: "Radical Transparency", desc: "Every hectare, scan, and credit traces back to raw satellite and field evidence — no black boxes.", icon: PATHS.eye },
+    { title: "Radical Transparency", desc: "Every hectare, scan, and credit traces back to raw satellite and field evidence with no black boxes.", icon: PATHS.eye },
     { title: "Science-First", desc: "Biomass and carbon models are peer-reviewed and validated against real government and NGO field data.", icon: PATHS.flask },
     { title: "Built With Field Teams", desc: "Designed alongside the NGOs and coastal communities doing the planting, so it fits real fieldwork.", icon: PATHS.users },
-    { title: "Immutable By Design", desc: "Once anchored on-chain, a verification record can be audited by anyone, forever — no retroactive edits.", icon: PATHS.lock },
+    { title: "Immutable By Design", desc: "Once anchored on-chain, a verification record can be audited by anyone, forever with no retroactive edits.", icon: PATHS.lock },
   ];
   return (
     <section id="about" style={{ background: "#F7F8F4", padding: "104px 0" }}>
@@ -603,7 +597,7 @@ function About() {
           </h2>
           <p style={{ color: "#54767D", fontSize: "0.98rem", lineHeight: 1.8, margin: "0 0 16px" }}>
             Mangroves and seagrass meadows store carbon many times faster than land forests, but
-            self-reported restoration numbers were routinely inflated — and buyers had no way to check.
+            self-reported restoration numbers were routinely inflated, and buyers had no way to check.
             BlueGuard was built to close that gap.
           </p>
           <p style={{ color: "#54767D", fontSize: "0.98rem", lineHeight: 1.8, margin: "0 0 36px" }}>
@@ -629,7 +623,7 @@ function About() {
           <div style={{ position: "absolute", bottom: 28, left: 28, right: 28, background: "rgba(7,28,33,0.82)", backdropFilter: "blur(8px)", border: "1px solid rgba(95,191,140,0.25)", borderRadius: 14, padding: "18px 22px" }}>
             <div style={{ fontFamily: "var(--font-mono)", fontSize: "0.6rem", letterSpacing: "0.12em", textTransform: "uppercase", color: "#5FBF8C", marginBottom: 6 }}>Since day one</div>
             <p style={{ fontFamily: "var(--font-serif)", fontSize: "1.05rem", color: "#F7F8F4", margin: 0, lineHeight: 1.5 }}>
-              Field-verified before it was on-chain — now the two happen together.
+              Field-verified before it was on-chain, now the two happen together.
             </p>
           </div>
         </div>
@@ -661,7 +655,7 @@ function ImmersiveSplit() {
         </h2>
         <p style={{ fontSize: "0.95rem", color: "#7AAAB1", lineHeight: 1.8, maxWidth: 440, marginBottom: 32 }}>
           BlueGuard combines satellite imagery from Google Earth Engine with AI-driven biomass
-          models and cryptographic proof — so no restoration claim goes unverified, and no
+          models and cryptographic proof so no restoration claim goes unverified, and no
           carbon credit goes unchallenged.
         </p>
         <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
