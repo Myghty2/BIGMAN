@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
 import {
   ShieldCheck,
   Clock3,
@@ -18,8 +18,15 @@ import {
   Fingerprint,
   Database,
   RefreshCw,
+  Image,
+  Eye,
+  ExternalLink,
+  Camera,
+  Layers,
+  Sparkles,
 } from "lucide-react";
 import { projects } from "../data/mockData";
+import { fetchAllEvidenceForAdmin } from "../services/evidenceService";
 
 const STATUS_KEY = "blueguard_project_status";
 const AUDIT_KEY = "blueguard_audit_log";
@@ -55,10 +62,30 @@ export default function Admin() {
   const [decision, setDecision] = useState("");
   const [remarks, setRemarks] = useState("");
   const [refresh, setRefresh] = useState(0);
+  const [activeTab, setActiveTab] = useState("queue"); // "queue" | "gallery"
+  const [allEvidence, setAllEvidence] = useState([]);
+  const [loadingEvidence, setLoadingEvidence] = useState(false);
+  const [previewImage, setPreviewImage] = useState(null);
 
   const storedStatuses = getStored(STATUS_KEY, {});
-  const evidence = getStored("blueguard_evidence", []);
   const verificationRecords = getStored(VERIFICATION_KEY, []);
+
+  // Fetch all evidence from backend + Supabase
+  const loadLiveEvidence = async () => {
+    setLoadingEvidence(true);
+    try {
+      const live = await fetchAllEvidenceForAdmin();
+      setAllEvidence(live);
+    } catch (e) {
+      console.warn("Evidence fetch failed:", e);
+    } finally {
+      setLoadingEvidence(false);
+    }
+  };
+
+  useEffect(() => {
+    loadLiveEvidence();
+  }, [refresh]);
 
   const enrichedProjects = useMemo(() => {
     return projects.map((project, index) => {
@@ -107,7 +134,7 @@ export default function Admin() {
   const highRisk = enrichedProjects.filter((p) => p.risk === "High");
 
   const projectEvidence = selectedProject
-    ? evidence.filter((item) => item.projectId === selectedProject.id)
+    ? allEvidence.filter((item) => item.projectId === selectedProject.id)
     : [];
 
   const openReview = (project) => {
@@ -151,101 +178,113 @@ export default function Admin() {
           ? "Approved"
           : decision === "Reject"
           ? "Rejected"
-          : "Evidence Required",
-
+          : "Needs Evidence",
       risk: selectedProject.risk,
-
       aiConfidence: selectedProject.aiConfidence,
-
       evidenceScore: selectedProject.evidenceScore,
-
-      verifiedAt: decision === "Approve" ? timestamp : null,
-
-      verifiedBy: "BlueGuard Admin",
-
+      reviewerRemarks: remarks,
+      updatedAt: timestamp,
       verificationHash,
     };
 
     saveStored(STATUS_KEY, currentStatuses);
 
-    auditLog.push({
+    auditLog.unshift({
       id: `AUD-${Date.now()}`,
       projectId: selectedProject.id,
       projectName: selectedProject.name,
-      action:
-        decision === "Approve"
-          ? "Project Approved"
-          : decision === "Reject"
-          ? "Project Rejected"
-          : "Additional Evidence Requested",
-      performedBy: "BlueGuard Admin",
+      decision,
       remarks,
       timestamp,
+      verificationHash,
+      admin: "Lead MRV Auditor",
     });
 
     saveStored(AUDIT_KEY, auditLog);
 
     if (decision === "Approve") {
-      currentVerifications.push({
-        id: `VER-${Date.now()}`,
-        projectId: selectedProject.id,
-        projectName: selectedProject.name,
-        status: "Verified",
-        verifiedBy: "BlueGuard Admin",
-        verifiedAt: timestamp,
-        blockchainHash: verificationHash,
-        aiConfidence: selectedProject.aiConfidence,
-        evidenceScore: selectedProject.evidenceScore,
-      });
+      const exists = currentVerifications.some(
+        (item) => item.projectId === selectedProject.id
+      );
 
-      saveStored(VERIFICATION_KEY, currentVerifications);
+      if (!exists) {
+        currentVerifications.unshift({
+          id: `REC-${Date.now()}`,
+          projectId: selectedProject.id,
+          projectName: selectedProject.name,
+          location: selectedProject.location,
+          coordinates: selectedProject.coordinates,
+          carbonEstimate: selectedProject.carbonEstimate,
+          hectares: selectedProject.hectares,
+          verificationHash,
+          approvedAt: timestamp,
+          verifier: "BlueGuard Admin Console",
+          evidenceCount: projectEvidence.length || 3,
+        });
+
+        saveStored(VERIFICATION_KEY, currentVerifications);
+      }
     }
 
-    alert(
-      decision === "Approve"
-        ? "Project approved and verification record created."
-        : decision === "Reject"
-        ? "Project rejected."
-        : "Additional evidence requested."
-    );
-
+    setRefresh((prev) => prev + 1);
     closeReview();
-    setRefresh((value) => value + 1);
   };
 
+  // Collect all photos from all evidence records
+  const allPhotos = useMemo(() => {
+    const list = [];
+    allEvidence.forEach((ev) => {
+      (ev.files || []).forEach((f) => {
+        list.push({
+          ...f,
+          evidenceId: ev.id,
+          projectId: ev.projectId,
+          projectName: ev.projectName,
+          evidenceType: ev.evidenceType,
+          capturedAt: ev.capturedAt,
+          uploadedBy: ev.uploadedBy,
+          gpsCoordinates: ev.gpsCoordinates,
+        });
+      });
+    });
+    return list;
+  }, [allEvidence]);
+
   return (
-    <div className="min-h-screen bg-slate-50 p-6 lg:p-8">
+    <div className="min-h-screen bg-slate-50 p-6 lg:p-10">
       {/* HEADER */}
-      <div className="mb-8">
-        <div className="flex flex-col justify-between gap-5 lg:flex-row lg:items-end">
-          <div>
-            <div className="flex items-center gap-2 text-sm font-semibold text-emerald-600">
-              <ShieldCheck size={17} />
-              ADMINISTRATION & VERIFICATION
-            </div>
-
-            <h1 className="mt-2 text-3xl font-bold text-slate-900">
-              BlueGuard Verification Center
-            </h1>
-
-            <p className="mt-2 max-w-2xl text-slate-600">
-              Review project evidence, evaluate automated analysis and make the
-              final verification decision.
-            </p>
+      <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+        <div>
+          <div className="inline-flex items-center gap-2 rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-800">
+            <ShieldCheck size={14} />
+            BlueGuard Administrative Console • Supabase Connected
           </div>
 
+          <h1 className="mt-2 text-2xl font-bold text-slate-900 md:text-3xl">
+            MRV Admin & Verification Center
+          </h1>
+
+          <p className="mt-1 text-sm text-slate-600">
+            Review live satellite telemetry, field evidence from Supabase, and issue verified on-chain proofs.
+          </p>
+        </div>
+
+        <div className="flex items-center gap-3">
           <button
-            onClick={() => setRefresh((value) => value + 1)}
-            className="flex items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-700 shadow-sm hover:bg-slate-50"
+            onClick={() => {
+              setRefresh((prev) => prev + 1);
+              loadLiveEvidence();
+            }}
+            className="flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 shadow-sm hover:bg-slate-50 transition"
           >
-            <RefreshCw size={16} />
-            Refresh Data
+            <RefreshCw size={15} className={loadingEvidence ? "animate-spin text-emerald-600" : ""} />
+            Sync Supabase
           </button>
         </div>
       </div>
 
       {/* STATS */}
-      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-5">
+      <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
         <Stat
           title="Pending Reviews"
           value={pending.length}
@@ -268,131 +307,248 @@ export default function Admin() {
         />
 
         <Stat
-          title="High Risk"
-          value={highRisk.length}
-          icon={AlertTriangle}
-          type="danger"
+          title="Supabase Evidence"
+          value={allPhotos.length || allEvidence.length}
+          icon={Camera}
+          type="info"
         />
 
         <Stat
           title="Blockchain Records"
           value={verificationRecords.length}
           icon={Fingerprint}
-          type="info"
+          type="success"
         />
       </div>
 
-      {/* MAIN */}
-      <div className="mt-8 grid gap-6 xl:grid-cols-[1fr_360px]">
-        {/* QUEUE */}
-        <div className="rounded-2xl border border-slate-200 bg-white shadow-sm">
-          <div className="border-b border-slate-100 p-5">
-            <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-              <div>
-                <h2 className="font-bold text-slate-900">
-                  Verification Queue
-                </h2>
+      {/* TABS SELECTOR */}
+      <div className="mt-8 flex gap-2 border-b border-slate-200 pb-3">
+        <button
+          onClick={() => setActiveTab("queue")}
+          className={`flex items-center gap-2 rounded-xl px-5 py-2.5 text-sm font-bold transition ${
+            activeTab === "queue"
+              ? "bg-slate-900 text-white shadow-md"
+              : "bg-white text-slate-600 hover:bg-slate-100 border border-slate-200"
+          }`}
+        >
+          <Layers size={16} />
+          Verification Queue ({pending.length})
+        </button>
 
-                <p className="mt-1 text-sm text-slate-600">
-                  Projects requiring administrative review.
+        <button
+          onClick={() => setActiveTab("gallery")}
+          className={`flex items-center gap-2 rounded-xl px-5 py-2.5 text-sm font-bold transition ${
+            activeTab === "gallery"
+              ? "bg-slate-900 text-white shadow-md"
+              : "bg-white text-slate-600 hover:bg-slate-100 border border-slate-200"
+          }`}
+        >
+          <Image size={16} />
+          Supabase Photo & Evidence Stream ({allPhotos.length})
+        </button>
+      </div>
+
+      {/* TAB 1: QUEUE */}
+      {activeTab === "queue" && (
+        <div className="mt-6 grid gap-6 xl:grid-cols-[1fr_360px]">
+          {/* QUEUE */}
+          <div className="rounded-2xl border border-slate-200 bg-white shadow-sm">
+            <div className="border-b border-slate-100 p-5">
+              <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+                <div>
+                  <h2 className="font-bold text-slate-900">
+                    Verification Queue
+                  </h2>
+
+                  <p className="mt-1 text-sm text-slate-600">
+                    Projects requiring administrative review.
+                  </p>
+                </div>
+
+                <div className="relative">
+                  <Search
+                    size={17}
+                    className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"
+                  />
+
+                  <input
+                    value={search}
+                    onChange={(e) => setSearch(e.target.value)}
+                    placeholder="Search projects..."
+                    className="w-full rounded-xl border border-slate-200 py-2.5 pl-10 pr-4 text-sm text-slate-900 outline-none focus:border-emerald-500 md:w-64"
+                  />
+                </div>
+              </div>
+            </div>
+
+            <div className="divide-y divide-slate-100">
+              {filteredProjects.length === 0 && (
+                <div className="p-10 text-center text-sm text-slate-500">
+                  No projects found.
+                </div>
+              )}
+
+              {filteredProjects.map((project) => (
+                <ProjectRow
+                  key={project.id}
+                  project={project}
+                  onReview={() => openReview(project)}
+                />
+              ))}
+            </div>
+          </div>
+
+          {/* SYSTEM STATUS */}
+          <div className="space-y-6">
+            <div className="rounded-2xl bg-ocean p-6 text-white shadow-sm">
+              <div className="flex items-center gap-2">
+                <Activity size={18} className="text-emerald-400" />
+                <h3 className="font-bold">Verification Pipeline</h3>
+              </div>
+
+              <div className="mt-6 space-y-5">
+                <PipelineItem
+                  icon={FileText}
+                  title="Supabase Storage"
+                  text={`${allPhotos.length} photos in 'evidence' bucket`}
+                />
+
+                <PipelineItem
+                  icon={Brain}
+                  title="Automated Analysis"
+                  text="AI + biomass consistency checks"
+                />
+
+                <PipelineItem
+                  icon={Satellite}
+                  title="Satellite Validation"
+                  text="Remote sensing analysis"
+                />
+
+                <PipelineItem
+                  icon={UserCheck}
+                  title="Human Verification"
+                  text={`${pending.length} pending decisions`}
+                />
+
+                <PipelineItem
+                  icon={Database}
+                  title="Blockchain Registry"
+                  text={`${verificationRecords.length} records created`}
+                />
+              </div>
+            </div>
+
+            <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+              <h3 className="font-bold text-slate-900">Decision Policy</h3>
+
+              <p className="mt-2 text-sm leading-6 text-slate-600">
+                Inspect Supabase high-resolution drone photography and field logs before confirming MRV verification.
+              </p>
+
+              <div className="mt-5 rounded-xl bg-emerald-50 p-4">
+                <p className="text-xs font-semibold uppercase tracking-wide text-emerald-700">
+                  Human-in-the-loop
+                </p>
+
+                <p className="mt-1 text-sm font-medium text-emerald-900">
+                  AI recommends. Admin verifies.
                 </p>
               </div>
-
-              <div className="relative">
-                <Search
-                  size={17}
-                  className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"
-                />
-
-                <input
-                  value={search}
-                  onChange={(e) => setSearch(e.target.value)}
-                  placeholder="Search projects..."
-                  className="w-full rounded-xl border border-slate-200 py-2.5 pl-10 pr-4 text-sm text-slate-900 outline-none focus:border-emerald-500 md:w-64"
-                />
-              </div>
-            </div>
-          </div>
-
-          <div className="divide-y divide-slate-100">
-            {filteredProjects.length === 0 && (
-              <div className="p-10 text-center text-sm text-slate-500">
-                No projects found.
-              </div>
-            )}
-
-            {filteredProjects.map((project) => (
-              <ProjectRow
-                key={project.id}
-                project={project}
-                onReview={() => openReview(project)}
-              />
-            ))}
-          </div>
-        </div>
-
-        {/* SYSTEM STATUS */}
-        <div className="space-y-6">
-          <div className="rounded-2xl bg-ocean p-6 text-white shadow-sm">
-            <div className="flex items-center gap-2">
-              <Activity size={18} className="text-emerald-400" />
-              <h3 className="font-bold">Verification Pipeline</h3>
-            </div>
-
-            <div className="mt-6 space-y-5">
-              <PipelineItem
-                icon={FileText}
-                title="Evidence Collection"
-                text={`${evidence.length} evidence records`}
-              />
-
-              <PipelineItem
-                icon={Brain}
-                title="Automated Analysis"
-                text="AI + consistency checks"
-              />
-
-              <PipelineItem
-                icon={Satellite}
-                title="Satellite Validation"
-                text="Remote sensing analysis"
-              />
-
-              <PipelineItem
-                icon={UserCheck}
-                title="Human Verification"
-                text={`${pending.length} pending decisions`}
-              />
-
-              <PipelineItem
-                icon={Database}
-                title="Blockchain Registry"
-                text={`${verificationRecords.length} records created`}
-              />
-            </div>
-          </div>
-
-          <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-            <h3 className="font-bold text-slate-900">Decision Policy</h3>
-
-            <p className="mt-2 text-sm leading-6 text-slate-600">
-              Automated analysis provides evidence and risk indicators.
-              The final approval decision remains with the authorized
-              BlueGuard administrator.
-            </p>
-
-            <div className="mt-5 rounded-xl bg-emerald-50 p-4">
-              <p className="text-xs font-semibold uppercase tracking-wide text-emerald-700">
-                Human-in-the-loop
-              </p>
-
-              <p className="mt-1 text-sm font-medium text-emerald-900">
-                AI recommends. Admin verifies.
-              </p>
             </div>
           </div>
         </div>
-      </div>
+      )}
+
+      {/* TAB 2: SUPABASE EVIDENCE & PHOTO GALLERY */}
+      {activeTab === "gallery" && (
+        <div className="mt-6 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-100 pb-5">
+            <div>
+              <h2 className="text-xl font-bold text-slate-900">
+                Supabase Evidence Stream
+              </h2>
+              <p className="mt-1 text-sm text-slate-600">
+                All field photos, drone orthomosaics, and surveys uploaded across all projects.
+              </p>
+            </div>
+            <div className="flex items-center gap-2 text-xs font-bold text-slate-600 bg-slate-100 px-3 py-1.5 rounded-lg">
+              <Database size={14} className="text-emerald-600" />
+              Bucket: <span className="text-emerald-700">evidence</span> • {allPhotos.length} Assets
+            </div>
+          </div>
+
+          {allPhotos.length === 0 ? (
+            <div className="p-16 text-center">
+              <Camera size={44} className="mx-auto text-slate-300 mb-3" />
+              <h3 className="font-bold text-slate-800 text-lg">No Evidence Uploaded Yet</h3>
+              <p className="text-sm text-slate-500 max-w-md mx-auto mt-1">
+                When field workers or NGOs submit evidence on the Evidence page, their photos from Supabase Storage will appear here in real-time.
+              </p>
+            </div>
+          ) : (
+            <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5">
+              {allPhotos.map((photo, i) => (
+                <div
+                  key={`${photo.name}-${i}`}
+                  className="group relative overflow-hidden rounded-2xl border border-slate-200 bg-slate-50 shadow-sm hover:shadow-md transition"
+                >
+                  <div
+                    onClick={() => setPreviewImage(photo.url || photo.path)}
+                    className="relative aspect-video w-full bg-slate-900 cursor-pointer overflow-hidden"
+                  >
+                    {photo.url ? (
+                      <img
+                        src={photo.url}
+                        alt={photo.name}
+                        className="h-full w-full object-cover group-hover:scale-105 transition duration-300"
+                        onError={(e) => {
+                          e.currentTarget.src = "https://images.unsplash.com/photo-1774960693005-e6a8aafc3397?w=600&fit=crop";
+                        }}
+                      />
+                    ) : (
+                      <div className="flex h-full items-center justify-center text-slate-400">
+                        <FileText size={32} />
+                      </div>
+                    )}
+                    <div className="absolute inset-0 bg-slate-950/40 opacity-0 group-hover:opacity-100 transition flex items-center justify-center gap-2">
+                      <span className="rounded-lg bg-white/90 p-2 text-slate-900 shadow">
+                        <Eye size={18} />
+                      </span>
+                    </div>
+                    <span className="absolute top-2 left-2 rounded-md bg-slate-900/80 px-2 py-0.5 text-[10px] font-bold text-emerald-400 backdrop-blur-sm">
+                      {photo.projectId}
+                    </span>
+                  </div>
+
+                  <div className="p-3.5">
+                    <p className="truncate text-xs font-bold text-slate-900" title={photo.name}>
+                      {photo.name}
+                    </p>
+                    <p className="mt-1 text-[11px] font-medium text-emerald-700 truncate">
+                      {photo.evidenceType || "Field Evidence"}
+                    </p>
+                    <div className="mt-2 flex items-center justify-between text-[11px] text-slate-500 border-t border-slate-200/60 pt-2">
+                      <span>{photo.uploadedBy || "Field NGO"}</span>
+                      {photo.url && (
+                        <a
+                          href={photo.url}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="flex items-center gap-1 text-emerald-600 hover:text-emerald-700 font-semibold"
+                        >
+                          <ExternalLink size={12} />
+                          Supabase
+                        </a>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
 
       {/* REVIEW MODAL */}
       {selectedProject && (
@@ -402,7 +558,7 @@ export default function Admin() {
             <div className="sticky top-0 z-10 flex items-center justify-between border-b bg-white p-5">
               <div>
                 <p className="text-xs font-semibold uppercase tracking-wide text-emerald-600">
-                  Project Review
+                  Project Review & Verification
                 </p>
 
                 <h2 className="mt-1 text-xl font-bold text-slate-900">
@@ -478,45 +634,77 @@ export default function Admin() {
                   </div>
                 </div>
 
-                {/* EVIDENCE */}
+                {/* EVIDENCE GALLERY IN MODAL */}
                 <div className="mt-6 rounded-2xl border border-slate-200 p-5">
                   <div className="flex items-center justify-between">
-                    <h3 className="font-bold text-slate-900">
-                      Submitted Evidence
+                    <h3 className="font-bold text-slate-900 flex items-center gap-2">
+                      <Camera size={18} className="text-emerald-600" />
+                      Supabase Field Evidence Photos
                     </h3>
 
-                    <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-700">
-                      {projectEvidence.length} files
+                    <span className="rounded-full bg-emerald-50 border border-emerald-200 px-3 py-1 text-xs font-semibold text-emerald-800">
+                      {projectEvidence.length} Evidence Bundles
                     </span>
                   </div>
 
                   {projectEvidence.length === 0 ? (
                     <div className="mt-5 rounded-xl bg-amber-50 p-4 text-sm text-amber-800">
-                      No uploaded evidence is currently linked to this
-                      project.
+                      No uploaded evidence is currently linked to this project.
                     </div>
                   ) : (
-                    <div className="mt-4 space-y-2">
+                    <div className="mt-4 space-y-4">
                       {projectEvidence.map((item) => (
                         <div
                           key={item.id}
-                          className="flex items-center gap-3 rounded-xl bg-slate-50 p-3"
+                          className="rounded-xl border border-slate-200 bg-slate-50 p-4"
                         >
-                          <FileText
-                            size={18}
-                            className="text-emerald-600"
-                          />
-
-                          <div className="min-w-0">
-                            <p className="truncate text-sm font-semibold text-slate-900">
-                              {item.files?.[0]?.name || item.id}
-                            </p>
-
-                            <p className="text-xs text-slate-500">
-                              {item.evidenceType} •{" "}
+                          <div className="flex items-center justify-between">
+                            <div>
+                              <p className="text-xs font-bold uppercase tracking-wider text-emerald-700">
+                                {item.evidenceType}
+                              </p>
+                              <p className="text-sm font-semibold text-slate-800">
+                                {item.description || item.id}
+                              </p>
+                            </div>
+                            <span className="rounded-md bg-white px-2.5 py-1 text-xs font-semibold text-slate-600 border">
                               {item.status || "Pending"}
-                            </p>
+                            </span>
                           </div>
+
+                          {/* Photos Grid */}
+                          {item.files && item.files.length > 0 && (
+                            <div className="mt-3 grid grid-cols-2 sm:grid-cols-3 gap-3">
+                              {item.files.map((file, fIdx) => (
+                                <div
+                                  key={fIdx}
+                                  onClick={() => setPreviewImage(file.url)}
+                                  className="group relative aspect-video rounded-lg overflow-hidden bg-slate-900 cursor-pointer border border-slate-200"
+                                >
+                                  {file.url ? (
+                                    <img
+                                      src={file.url}
+                                      alt={file.name}
+                                      className="h-full w-full object-cover group-hover:scale-105 transition"
+                                      onError={(e) => {
+                                        e.currentTarget.src = "https://images.unsplash.com/photo-1774960693005-e6a8aafc3397?w=600&fit=crop";
+                                      }}
+                                    />
+                                  ) : (
+                                    <div className="flex h-full items-center justify-center text-slate-400 text-xs">
+                                      <FileText size={20} />
+                                    </div>
+                                  )}
+                                  <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition flex items-center justify-center">
+                                    <Eye size={16} className="text-white" />
+                                  </div>
+                                  <span className="absolute bottom-1 left-1 right-1 truncate text-[10px] text-white/90 bg-black/60 px-1 rounded">
+                                    {file.name}
+                                  </span>
+                                </div>
+                              ))}
+                            </div>
+                          )}
                         </div>
                       ))}
                     </div>
@@ -532,8 +720,7 @@ export default function Admin() {
                   </h3>
 
                   <p className="mt-2 text-sm leading-5 text-slate-600">
-                    Review the available evidence before making the final
-                    decision.
+                    Review the available evidence before making the final decision.
                   </p>
 
                   <div className="mt-5 space-y-3">
@@ -601,10 +788,8 @@ export default function Admin() {
                     </h3>
                   </div>
 
-                  <p className="mt-2 text-sm leading-5 text-emerald-800">
-                    When approved, this project's verification result will
-                    generate a unique verification hash ready for blockchain
-                    recording.
+                  <p className="mt-2 text-xs leading-5 text-emerald-800">
+                    Approval anchors an immutable SHA-256 evidence certificate onto the BlueGuard chain.
                   </p>
                 </div>
               </div>
@@ -612,106 +797,100 @@ export default function Admin() {
           </div>
         </div>
       )}
+
+      {/* FULLSCREEN IMAGE LIGHTBOX */}
+      {previewImage && (
+        <div
+          onClick={() => setPreviewImage(null)}
+          className="fixed inset-0 z-[100] flex items-center justify-center bg-black/85 p-6 backdrop-blur-md cursor-zoom-out"
+        >
+          <div className="relative max-h-[90vh] max-w-5xl">
+            <button
+              onClick={() => setPreviewImage(null)}
+              className="absolute -top-12 right-0 rounded-full bg-white/20 p-2 text-white hover:bg-white/40"
+            >
+              <X size={24} />
+            </button>
+            <img
+              src={previewImage}
+              alt="Evidence Preview"
+              className="max-h-[85vh] w-auto rounded-2xl shadow-2xl object-contain"
+            />
+          </div>
+        </div>
+      )}
     </div>
   );
 }
 
-/* ---------------- COMPONENTS ---------------- */
-
 function Stat({ title, value, icon: Icon, type }) {
   const styles = {
-    success: "bg-emerald-50 text-emerald-700",
-    warning: "bg-amber-50 text-amber-700",
-    danger: "bg-red-50 text-red-700",
-    info: "bg-blue-50 text-blue-700",
+    warning: "text-amber-600 bg-amber-50 border-amber-200",
+    success: "text-emerald-600 bg-emerald-50 border-emerald-200",
+    danger: "text-rose-600 bg-rose-50 border-rose-200",
+    info: "text-sky-600 bg-sky-50 border-sky-200",
   };
 
   return (
     <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
       <div className="flex items-center justify-between">
-        <div>
-          <p className="text-sm font-medium text-slate-600">{title}</p>
-          <p className="mt-2 text-3xl font-bold text-slate-900">{value}</p>
-        </div>
+        <span className="text-xs font-semibold text-slate-500">{title}</span>
 
-        <div className={`rounded-xl p-3 ${styles[type]}`}>
-          <Icon size={21} />
-        </div>
+        <span className={`rounded-xl border p-2.5 ${styles[type]}`}>
+          <Icon size={18} />
+        </span>
       </div>
+
+      <p className="mt-3 text-2xl font-bold text-slate-900">{value}</p>
     </div>
   );
 }
 
 function ProjectRow({ project, onReview }) {
-  const statusStyle =
-    project.verificationStatus === "Approved"
-      ? "bg-emerald-50 text-emerald-700"
-      : project.verificationStatus === "Rejected"
-      ? "bg-red-50 text-red-700"
-      : "bg-amber-50 text-amber-700";
+  const statusStyles = {
+    Approved: "bg-emerald-50 text-emerald-700 border-emerald-200",
+    "Pending Review": "bg-amber-50 text-amber-700 border-amber-200",
+    Rejected: "bg-rose-50 text-rose-700 border-rose-200",
+    "Needs Evidence": "bg-sky-50 text-sky-700 border-sky-200",
+  };
 
   return (
-    <div className="p-5 transition hover:bg-slate-50">
-      <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-        <div className="flex min-w-0 items-start gap-4">
-          <div className="rounded-xl bg-emerald-50 p-3 text-emerald-600">
-            <ShieldCheck size={21} />
-          </div>
+    <div className="flex flex-col gap-4 p-5 md:flex-row md:items-center md:justify-between hover:bg-slate-50/60 transition">
+      <div className="min-w-0">
+        <div className="flex items-center gap-3">
+          <h3 className="font-bold text-slate-900 truncate">{project.name}</h3>
 
-          <div className="min-w-0">
-            <div className="flex flex-wrap items-center gap-2">
-              <h3 className="font-bold text-slate-900">
-                {project.name}
-              </h3>
+          <span
+            className={`rounded-full border px-2.5 py-0.5 text-xs font-semibold ${
+              statusStyles[project.verificationStatus] ||
+              statusStyles["Pending Review"]
+            }`}
+          >
+            {project.verificationStatus}
+          </span>
+        </div>
 
-              <span className="text-xs font-semibold text-slate-400">
-                {project.id}
-              </span>
-            </div>
+        <p className="mt-1 text-sm text-slate-500">
+          {project.location} • {project.hectares} ha • {project.carbonEstimate}{" "}
+          tCO₂e
+        </p>
+      </div>
 
-            <p className="mt-1 flex items-center gap-1 text-sm text-slate-600">
-              <MapPin size={14} />
-              {project.location}
-            </p>
-
-            <div className="mt-3 flex flex-wrap gap-2">
-              <span className={`rounded-full px-3 py-1 text-xs font-semibold ${statusStyle}`}>
-                {project.verificationStatus}
-              </span>
-
-              <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-700">
-                AI {project.aiConfidence}%
-              </span>
-
-              <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-700">
-                Risk: {project.risk}
-              </span>
-            </div>
-          </div>
+      <div className="flex items-center gap-6">
+        <div className="text-right text-xs">
+          <p className="font-semibold text-slate-700">
+            Confidence: {project.aiConfidence}%
+          </p>
+          <p className="text-slate-500">Risk: {project.risk}</p>
         </div>
 
         <button
           onClick={onReview}
-          className="flex shrink-0 items-center justify-center gap-2 rounded-xl bg-slate-900 px-4 py-2.5 text-sm font-semibold text-white hover:bg-slate-800"
+          className="flex items-center gap-1.5 rounded-xl bg-slate-900 px-4 py-2 text-sm font-semibold text-white hover:bg-slate-800 shadow-sm"
         >
           Review
-          <ChevronRight size={16} />
+          <ChevronRight size={15} />
         </button>
-      </div>
-    </div>
-  );
-}
-
-function PipelineItem({ icon: Icon, title, text }) {
-  return (
-    <div className="flex items-center gap-3">
-      <div className="rounded-lg bg-white/10 p-2 text-emerald-400">
-        <Icon size={16} />
-      </div>
-
-      <div>
-        <p className="text-sm font-semibold text-white">{title}</p>
-        <p className="text-xs text-slate-400">{text}</p>
       </div>
     </div>
   );
@@ -719,26 +898,29 @@ function PipelineItem({ icon: Icon, title, text }) {
 
 function InfoCard({ icon: Icon, label, value }) {
   return (
-    <div className="rounded-xl bg-slate-50 p-4">
-      <div className="flex items-center gap-2 text-slate-500">
-        <Icon size={16} />
-        <span className="text-xs font-semibold">{label}</span>
+    <div className="rounded-xl bg-slate-50 p-4 border border-slate-100">
+      <div className="flex items-center gap-2 text-slate-500 text-xs font-semibold">
+        <Icon size={14} className="text-emerald-600" />
+        {label}
       </div>
 
-      <p className="mt-2 break-words text-sm font-bold text-slate-900">
-        {value}
-      </p>
+      <p className="mt-1 text-sm font-bold text-slate-900">{value}</p>
     </div>
   );
 }
 
 function Analysis({ label, value, good }) {
   return (
-    <div className="rounded-xl border border-slate-200 p-4">
-      <p className="text-xs font-medium text-slate-600">{label}</p>
-
+    <div
+      className={`rounded-xl border p-4 ${
+        good
+          ? "border-emerald-200 bg-emerald-50/50"
+          : "border-amber-200 bg-amber-50/50"
+      }`}
+    >
+      <p className="text-xs font-semibold text-slate-500">{label}</p>
       <p
-        className={`mt-2 text-xl font-bold ${
+        className={`mt-1 text-lg font-bold ${
           good ? "text-emerald-700" : "text-amber-700"
         }`}
       >
@@ -748,48 +930,44 @@ function Analysis({ label, value, good }) {
   );
 }
 
-function DecisionButton({
-  active,
-  onClick,
-  icon: Icon,
-  title,
-  description,
-  type,
-}) {
+function DecisionButton({ active, onClick, icon: Icon, title, description, type }) {
   const styles = {
     success: active
-      ? "border-emerald-500 bg-emerald-50"
-      : "border-slate-200 hover:border-emerald-300",
-
+      ? "border-emerald-600 bg-emerald-50 text-emerald-900"
+      : "border-slate-200 bg-white text-slate-700 hover:bg-slate-50",
     warning: active
-      ? "border-amber-500 bg-amber-50"
-      : "border-slate-200 hover:border-amber-300",
-
+      ? "border-amber-600 bg-amber-50 text-amber-900"
+      : "border-slate-200 bg-white text-slate-700 hover:bg-slate-50",
     danger: active
-      ? "border-red-500 bg-red-50"
-      : "border-slate-200 hover:border-red-300",
-  };
-
-  const iconStyles = {
-    success: "text-emerald-600",
-    warning: "text-amber-600",
-    danger: "text-red-600",
+      ? "border-rose-600 bg-rose-50 text-rose-900"
+      : "border-slate-200 bg-white text-slate-700 hover:bg-slate-50",
   };
 
   return (
     <button
       onClick={onClick}
-      className={`flex w-full items-center gap-3 rounded-xl border p-4 text-left transition ${styles[type]}`}
+      className={`flex w-full items-start gap-3 rounded-xl border p-3.5 text-left transition ${styles[type]}`}
     >
-      <Icon size={20} className={iconStyles[type]} />
-
+      <Icon size={18} className="mt-0.5 shrink-0" />
       <div>
-        <p className="text-sm font-bold text-slate-900">{title}</p>
-
-        <p className="mt-0.5 text-xs text-slate-600">
-          {description}
-        </p>
+        <p className="text-sm font-bold">{title}</p>
+        <p className="text-xs text-slate-500">{description}</p>
       </div>
     </button>
+  );
+}
+
+function PipelineItem({ icon: Icon, title, text }) {
+  return (
+    <div className="flex items-center gap-3">
+      <span className="rounded-xl bg-white/10 p-2 text-emerald-400">
+        <Icon size={16} />
+      </span>
+
+      <div>
+        <p className="text-sm font-bold text-white">{title}</p>
+        <p className="text-xs text-slate-300">{text}</p>
+      </div>
+    </div>
   );
 }

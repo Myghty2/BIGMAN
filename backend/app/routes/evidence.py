@@ -63,11 +63,21 @@ def submit_evidence_bundle(bundle: EvidenceBundleCreate):
     }
 
 
+@router.get("/all")
+def get_all_evidence():
+    docs = list(evidence_collection.find({}, {"_id": 0}).sort("created_at", -1))
+    return {
+        "count": len(docs),
+        "evidence": docs
+    }
+
+
 @router.get("/list/{project_id}")
 def get_project_evidence(project_id: str):
-    docs = list(evidence_collection.find({"project_id": project_id}, {"_id": 0}))
+    docs = list(evidence_collection.find({"project_id": project_id}, {"_id": 0}).sort("created_at", -1))
     return {
         "project_id": project_id,
         "count": len(docs),
         "evidence": docs
     }
+

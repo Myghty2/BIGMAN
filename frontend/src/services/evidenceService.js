@@ -7,7 +7,7 @@ const EVIDENCE_BUCKET = import.meta.env.VITE_SUPABASE_EVIDENCE_BUCKET || "eviden
  * Upload a single file to Supabase Storage Bucket
  * @param {File} file
  * @param {string} projectId
- * @returns {Promise<{ name: string, url: string, size: number, type: string }>}
+ * @returns {Promise<{ name: string, url: string, size: number, type: string, error?: string }>}
  */
 export async function uploadEvidenceFileToSupabase(file, projectId = "general") {
   try {
@@ -24,14 +24,14 @@ export async function uploadEvidenceFileToSupabase(file, projectId = "general") 
       });
 
     if (error) {
-      console.warn("Supabase upload notice:", error.message);
-      // If bucket doesn't exist or offline, fallback to object preview url
+      console.error(`[Supabase Upload Error for ${file.name}]:`, error.message);
       return {
         name: file.name,
         path: filePath,
         url: URL.createObjectURL(file),
         size: file.size,
         type: file.type,
+        error: error.message,
       };
     }
 
@@ -40,20 +40,24 @@ export async function uploadEvidenceFileToSupabase(file, projectId = "general") 
       .from(EVIDENCE_BUCKET)
       .getPublicUrl(filePath);
 
+    const publicUrl = publicUrlData?.publicUrl || URL.createObjectURL(file);
+    console.log(`[Supabase Upload Success]: ${file.name} -> ${publicUrl}`);
+
     return {
       name: file.name,
       path: filePath,
-      url: publicUrlData?.publicUrl || URL.createObjectURL(file),
+      url: publicUrl,
       size: file.size,
       type: file.type,
     };
   } catch (err) {
-    console.error("Failed to upload to Supabase:", err);
+    console.error("[Supabase Upload Exception]:", err);
     return {
       name: file.name,
       url: URL.createObjectURL(file),
       size: file.size,
       type: file.type,
+      error: err.message || "Upload failed",
     };
   }
 }
@@ -66,6 +70,11 @@ export async function submitEvidenceBundle(evidenceData, files = []) {
   const uploadedFiles = await Promise.all(
     files.map((file) => uploadEvidenceFileToSupabase(file, evidenceData.projectId))
   );
+
+  const errors = uploadedFiles.filter((f) => f.error);
+  if (errors.length > 0) {
+    console.warn(`[Supabase Notice]: ${errors.length} file(s) had issues with Supabase bucket:`, errors);
+  }
 
   const payload = {
     ...evidenceData,
@@ -87,8 +96,9 @@ export async function submitEvidenceBundle(evidenceData, files = []) {
       body: JSON.stringify(payload),
     });
 
-    if (!response.ok) {
-      console.warn("Backend /evidence/submit returned non-200:", response.status);
+    if (response.ok) {
+      const resData = await response.json();
+      console.log("[Backend Evidence Saved]:", resData);
     }
   } catch (err) {
     console.warn("Backend offline or unreachable, saved locally:", err);
@@ -98,5 +108,49 @@ export async function submitEvidenceBundle(evidenceData, files = []) {
   const existing = JSON.parse(localStorage.getItem("blueguard_evidence") || "[]");
   localStorage.setItem("blueguard_evidence", JSON.stringify([...existing, payload]));
 
-  return payload;
+  return {
+    payload,
+    hasSupabaseErrors: errors.length > 0,
+    errors,
+  };
 }
+
+/**
+ * Fetch all evidence from backend + Supabase for the Admin Console
+ */
+export async function fetchAllEvidenceForAdmin() {
+  const localList = JSON.parse(localStorage.getItem("blueguard_evidence") || "[]");
+
+  try {
+    const response = await fetch(`${API_BASE_URL}/evidence/all`);
+    if (response.ok) {
+      const data = await response.json();
+      const backendItems = (data.evidence || []).map((doc) => ({
+        id: doc.evidence_id || doc.id,
+        projectId: doc.project_id || doc.projectId,
+        projectName: doc.project_name || doc.projectName,
+        evidenceType: doc.evidence_type || doc.evidenceType,
+        description: doc.description,
+        capturedAt: doc.captured_at || doc.capturedAt,
+        gpsCoordinates: doc.gps_coordinates || doc.gpsCoordinates,
+        files: doc.files || [],
+        uploadedBy: doc.uploaded_by || doc.uploadedBy,
+        status: doc.status,
+        evidenceHash: doc.evidence_hash,
+      }));
+
+      // Merge backend items with local items without duplicates
+      const map = new Map();
+      [...localList, ...backendItems].forEach((item) => {
+        if (item.id) map.set(item.id, item);
+      });
+      return [...map.values()];
+    }
+  } catch (err) {
+    console.warn("Backend /evidence/all offline, using local data:", err);
+  }
+
+  return localList;
+}
+
+
