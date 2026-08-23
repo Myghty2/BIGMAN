@@ -45,11 +45,33 @@ function GlobalStyles() {
       body { margin: 0; font-family: var(--font-sans); background-color: var(--color-foam); color: var(--color-ink); -webkit-font-smoothing: antialiased; }
       ::-webkit-scrollbar { width: 6px; }
       ::-webkit-scrollbar-track { background: transparent; }
-      ::-webkit-scrollbar-thumb { background: var(--color-teal-light); border-radius: 3px; }
-
       @keyframes fadeUp { from { opacity: 0; transform: translateY(18px); } to { opacity: 1; transform: translateY(0); } }
       @keyframes floatSlow { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
       @keyframes pulseGlow { 0%, 100% { opacity: 0.55; } 50% { opacity: 1; } }
+      @keyframes marineOrganicFloat {
+        0%, 100% {
+          transform: translateY(0px) rotate(0deg) scale(1);
+          filter: drop-shadow(0 6px 18px rgba(95, 191, 140, 0.4)) drop-shadow(0 0 12px rgba(28, 122, 120, 0.3));
+        }
+        33% {
+          transform: translateY(-8px) rotate(-2deg) scale(1.04);
+          filter: drop-shadow(0 14px 28px rgba(95, 191, 140, 0.65)) drop-shadow(0 0 24px rgba(95, 191, 140, 0.5));
+        }
+        66% {
+          transform: translateY(-3px) rotate(1.8deg) scale(1.02);
+          filter: drop-shadow(0 8px 22px rgba(28, 122, 120, 0.5)) drop-shadow(0 0 16px rgba(63, 125, 92, 0.45));
+        }
+      }
+      @keyframes logoAuraPulse {
+        0%, 100% {
+          transform: scale(0.92);
+          opacity: 0.3;
+        }
+        50% {
+          transform: scale(1.22);
+          opacity: 0.7;
+        }
+      }
 
       .nav-link { position: relative; color: #9BB5BA; transition: color 0.2s; font-size: 0.875rem; font-weight: 500; letter-spacing: 0.02em; text-decoration: none; }
       .nav-link::after { content: ''; position: absolute; bottom: -4px; left: 0; width: 0; height: 1px; background: var(--color-teal-light); transition: width 0.25s; }
@@ -259,31 +281,54 @@ function Hero() {
         <div style={{ position: "absolute", inset: 0, background: "radial-gradient(ellipse 62% 58% at 50% 46%, rgba(6,20,24,0.62) 0%, rgba(6,20,24,0.15) 60%, rgba(6,20,24,0) 100%)" }} />
       </div>
 
-      <div style={{ position: "relative", maxWidth: 920, margin: "0 auto", padding: "96px 24px 72px", textAlign: "center" }}>
+      <div style={{ position: "relative", maxWidth: 980, margin: "0 auto", padding: "96px 24px 72px", textAlign: "center" }}>
 
         {/* Glass panel wraps the core message for strong contrast against the busy photo */}
         <div className="hero-glass" style={{
-          background: "linear-gradient(180deg, rgba(7,28,33,0.5), rgba(7,28,33,0.68))",
-          backdropFilter: "blur(20px)",
-          WebkitBackdropFilter: "blur(20px)",
-          border: "1px solid rgba(255,255,255,0.1)",
-          borderRadius: 28,
-          padding: "52px 56px 44px",
-          boxShadow: "0 30px 90px rgba(0,0,0,0.4)",
+          background: "linear-gradient(180deg, rgba(7,28,33,0.52), rgba(7,28,33,0.72))",
+          backdropFilter: "blur(24px)",
+          WebkitBackdropFilter: "blur(24px)",
+          border: "1px solid rgba(255,255,255,0.14)",
+          borderRadius: 32,
+          padding: "60px 64px 48px",
+          boxShadow: "0 35px 100px -10px rgba(0,0,0,0.5), 0 0 50px -10px rgba(28,122,120,0.25)",
           animation: "fadeUp 0.8s ease both",
         }}>
-          {/* Wordmark */}
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 16, marginBottom: 18 }}>
-            <img src={LOGO_SRC} alt="BlueGuard logo" style={{ width: 58, height: 58, objectFit: "contain", filter: "drop-shadow(0 4px 18px rgba(95,191,140,0.35))", animation: "floatSlow 5s ease-in-out infinite" }} />
-            <h1 style={{ fontFamily: "var(--font-serif)", fontWeight: 700, fontSize: "clamp(2.7rem, 7.5vw, 5rem)", color: "#F7F8F4", letterSpacing: "-0.04em", lineHeight: 1, margin: 0, textShadow: "0 6px 30px rgba(0,0,0,0.4)" }}>BlueGuard</h1>
+          {/* Wordmark with Realistic Organic Logo Animation */}
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 18, marginBottom: 20 }}>
+            <div style={{ position: "relative", display: "flex", alignItems: "center", justifyContent: "center" }}>
+              {/* Organic marine luminous aura glow ring */}
+              <div style={{
+                position: "absolute",
+                inset: "-8px",
+                borderRadius: "50%",
+                background: "radial-gradient(circle, rgba(95,191,140,0.45) 0%, rgba(28,122,120,0.15) 60%, transparent 80%)",
+                filter: "blur(8px)",
+                animation: "logoAuraPulse 4s ease-in-out infinite",
+                pointerEvents: "none",
+              }} />
+              <img
+                src={LOGO_SRC}
+                alt="BlueGuard logo"
+                style={{
+                  position: "relative",
+                  width: 66,
+                  height: 66,
+                  objectFit: "contain",
+                  animation: "marineOrganicFloat 6s cubic-bezier(0.45, 0.05, 0.55, 0.95) infinite",
+                  willChange: "transform, filter",
+                }}
+              />
+            </div>
+            <h1 style={{ fontFamily: "var(--font-serif)", fontWeight: 700, fontSize: "clamp(2.9rem, 7.8vw, 5.2rem)", color: "#F7F8F4", letterSpacing: "-0.04em", lineHeight: 1, margin: 0, textShadow: "0 6px 30px rgba(0,0,0,0.4)" }}>BlueGuard</h1>
           </div>
 
           {/* Tagline */}
-          <p style={{ fontFamily: "var(--font-serif)", fontStyle: "italic", fontWeight: 600, fontSize: "clamp(1.3rem, 3.2vw, 1.9rem)", color: "#7FD9A8", letterSpacing: "-0.01em", marginBottom: 20 }}>
+          <p style={{ fontFamily: "var(--font-serif)", fontStyle: "italic", fontWeight: 600, fontSize: "clamp(1.35rem, 3.4vw, 2rem)", color: "#7FD9A8", letterSpacing: "-0.01em", marginBottom: 22 }}>
             "Verify Before You Trust"
           </p>
 
-          <p style={{ fontSize: "1.05rem", color: "rgba(216,230,231,0.92)", lineHeight: 1.8, maxWidth: 580, margin: "0 auto 36px" }}>
+          <p style={{ fontSize: "1.08rem", color: "rgba(216,230,231,0.92)", lineHeight: 1.85, maxWidth: 620, margin: "0 auto 38px" }}>
             A blockchain-anchored platform for registering, monitoring, and verifying blue carbon
             restoration projects, from mangrove coastlines to seagrass meadows, with satellite
             intelligence and immutable on-chain records.
