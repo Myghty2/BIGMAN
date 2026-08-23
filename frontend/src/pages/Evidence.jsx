@@ -26,6 +26,7 @@ import {
   Waves,
 } from "lucide-react";
 import { projects as seedProjects } from "../data/mockData";
+import { submitEvidenceBundle } from "../services/evidenceService";
 
 const STORAGE_KEY = "blueguard_projects";
 
@@ -114,11 +115,15 @@ export default function Evidence() {
     );
   };
 
-  const handleSubmit = () => {
+  const [submitting, setSubmitting] = useState(false);
+
+  const handleSubmit = async () => {
     if (!selectedProject || files.length === 0) {
       alert("Please select a project and upload at least one evidence file.");
       return;
     }
+
+    setSubmitting(true);
 
     const existingEvidence = JSON.parse(
       localStorage.getItem("blueguard_evidence") || "[]"
@@ -134,20 +139,17 @@ export default function Evidence() {
       description: description.trim() || "Field evidence submitted for MRV verification.",
       capturedAt: new Date().toISOString(),
       gpsCoordinates: selectedProjectData?.coordinates || [21.9497, 89.1833],
-      files: files.map((file) => ({
-        name: file.name,
-        type: file.type,
-        size: file.size,
-      })),
       uploadedBy: "Mangrove NGO Foundation",
       status: "Pending Verification",
     };
 
-    localStorage.setItem(
-      "blueguard_evidence",
-      JSON.stringify([...existingEvidence, evidenceRecord])
-    );
+    try {
+      await submitEvidenceBundle(evidenceRecord, files);
+    } catch (err) {
+      console.warn("Evidence submission notice:", err);
+    }
 
+    setSubmitting(false);
     setSubmitted(true);
 
     setTimeout(() => {
@@ -522,13 +524,18 @@ export default function Evidence() {
         <button
           type="button"
           onClick={handleSubmit}
-          disabled={submitted}
+          disabled={submitted || submitting}
           className="inline-flex items-center justify-center gap-2.5 rounded-2xl bg-brand-teal px-10 py-4 text-base sm:text-lg font-bold text-white shadow-lg transition hover:bg-deep-navy active:scale-95 disabled:opacity-60"
         >
           {submitted ? (
             <>
               <CheckCircle2 size={20} />
               <span>Evidence Submitted</span>
+            </>
+          ) : submitting ? (
+            <>
+              <UploadCloud size={20} className="animate-bounce" />
+              <span>Uploading to Supabase & Submitting...</span>
             </>
           ) : (
             <>
