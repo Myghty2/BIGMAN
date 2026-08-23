@@ -302,7 +302,7 @@ function Hero() {
               onMouseLeave={e => { e.currentTarget.style.background = "#1C7A78"; e.currentTarget.style.boxShadow = "0 4px 24px rgba(28,122,120,0.5)"; }}>
               Register a Project
             </Link>
-            <Link to="/dashboard" style={{ background: "rgba(255,255,255,0.08)", color: "#DCE8E9", border: "1px solid rgba(255,255,255,0.2)", borderRadius: 10, padding: "13px 28px", fontWeight: 500, fontSize: "0.95rem", textDecoration: "none", transition: "background 0.2s" }}
+            <Link to="/login" style={{ background: "rgba(255,255,255,0.08)", color: "#DCE8E9", border: "1px solid rgba(255,255,255,0.2)", borderRadius: 10, padding: "13px 28px", fontWeight: 500, fontSize: "0.95rem", textDecoration: "none", transition: "background 0.2s" }}
               onMouseEnter={e => (e.currentTarget.style.background = "rgba(255,255,255,0.14)")}
               onMouseLeave={e => (e.currentTarget.style.background = "rgba(255,255,255,0.08)")}>
               Explore the Platform →
@@ -535,7 +535,7 @@ function Features() {
 
         {/* View all */}
         <div style={{ textAlign: "center", marginTop: 44 }}>
-          <Link to="/projects" style={{ display: "inline-flex", alignItems: "center", gap: 8, border: "1px solid #0B2B33", borderRadius: 100, padding: "13px 32px", fontSize: "0.9rem", fontWeight: 600, color: "#0B2B33", textDecoration: "none", transition: "background 0.2s, color 0.2s" }}
+          <Link to="/login" style={{ display: "inline-flex", alignItems: "center", gap: 8, border: "1px solid #0B2B33", borderRadius: 100, padding: "13px 32px", fontSize: "0.9rem", fontWeight: 600, color: "#0B2B33", textDecoration: "none", transition: "background 0.2s, color 0.2s" }}
             onMouseEnter={e => { e.currentTarget.style.background = "#0B2B33"; e.currentTarget.style.color = "#fff"; }}
             onMouseLeave={e => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = "#0B2B33"; }}>
             View All Projects →
@@ -694,10 +694,10 @@ function CTABand() {
           onMouseLeave={e => (e.currentTarget.style.transform = "none")}>
           Create Account →
         </Link>
-        <Link to="/dashboard" style={{ background: "rgba(0,0,0,0.15)", color: "#fff", border: "1px solid rgba(255,255,255,0.25)", borderRadius: 10, padding: "13px 28px", fontWeight: 500, fontSize: "0.95rem", textDecoration: "none", transition: "background 0.2s" }}
+        <Link to="/login" style={{ background: "rgba(0,0,0,0.15)", color: "#fff", border: "1px solid rgba(255,255,255,0.25)", borderRadius: 10, padding: "13px 28px", fontWeight: 500, fontSize: "0.95rem", textDecoration: "none", transition: "background 0.2s" }}
           onMouseEnter={e => (e.currentTarget.style.background = "rgba(0,0,0,0.25)")}
           onMouseLeave={e => (e.currentTarget.style.background = "rgba(0,0,0,0.15)")}>
-          Explore Dashboard →
+          Sign In / Request Demo →
         </Link>
       </div>
     </section>
