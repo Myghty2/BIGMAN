@@ -1,9 +1,12 @@
 import { useState, useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
 import logoImg from "../assets/logo_transparent.png";
+import logoImgLight from "../assets/logo_transparent_light.png";
 
 // ── Logo (transparent mangrove marine emblem) ──
+// Dark mark for light backgrounds (project card badges), light mark for dark backgrounds (nav, hero, footer)
 const LOGO_SRC = logoImg;
+const LOGO_SRC_LIGHT = logoImgLight;
 
 // ── Image URLs ───────────────────────────────────────────────────────────────
 const IMGS = {
@@ -121,6 +124,11 @@ function GlobalStyles() {
         .photo-band-grid > div { height: 190px !important; }
         .stats-band-grid { grid-template-columns: 1fr !important; gap: 30px !important; }
       }
+
+      @media (prefers-reduced-motion: reduce) {
+        .reveal-on-scroll { opacity: 1 !important; transform: none !important; transition: none !important; }
+        * { animation-duration: 0.001ms !important; animation-iteration-count: 1 !important; }
+      }
     `}</style>
   );
 }
@@ -214,6 +222,26 @@ function useCountUp(target, decimals, active, duration = 1400) {
   return decimals > 0 ? value.toFixed(decimals) : Math.round(value);
 }
 
+// ── Reveal (minimal scroll-triggered fade-up, reuses useOnScreen) ────────────
+function Reveal({ children, delay = 0, style = {} }) {
+  const ref = useRef(null);
+  const visible = useOnScreen(ref, "-60px");
+  return (
+    <div
+      ref={ref}
+      className="reveal-on-scroll"
+      style={{
+        opacity: visible ? 1 : 0,
+        transform: visible ? "translateY(0)" : "translateY(16px)",
+        transition: `opacity 0.6s ease ${delay}ms, transform 0.6s ease ${delay}ms`,
+        ...style,
+      }}
+    >
+      {children}
+    </div>
+  );
+}
+
 // ── Nav ───────────────────────────────────────────────────────────────────────
 function Nav() {
   const [open, setOpen] = useState(false);
@@ -226,7 +254,7 @@ function Nav() {
     <header style={{ background: "rgba(7,28,33,0.97)", backdropFilter: "blur(12px)", borderBottom: "1px solid rgba(255,255,255,0.07)", position: "sticky", top: 0, zIndex: 50 }}>
       <div style={{ maxWidth: 1280, margin: "0 auto", padding: "0 24px", height: 64, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
         <Link to="/" style={{ display: "flex", alignItems: "center", gap: 8, textDecoration: "none" }}>
-          <img src={LOGO_SRC} alt="BlueGuard logo" style={{ width: 28, height: 28, objectFit: "contain" }} />
+          <img src={LOGO_SRC_LIGHT} alt="BlueGuard logo" style={{ width: 28, height: 28, objectFit: "contain" }} />
           <span style={{ fontFamily: "var(--font-serif)", fontWeight: 700, fontSize: "1.2rem", color: "#F7F8F4", letterSpacing: "-0.02em" }}>BlueGuard</span>
         </Link>
 
@@ -305,32 +333,13 @@ function Hero() {
           boxShadow: "0 35px 110px -15px rgba(0,0,0,0.6), 0 0 60px -10px rgba(95,191,140,0.22), inset 0 1px 1px 0 rgba(255,255,255,0.18)",
           animation: "fadeUp 0.8s ease both",
         }}>
-          {/* Wordmark with Realistic Organic Logo Animation */}
+          {/* Wordmark */}
           <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 20, marginBottom: 22 }}>
-            <div style={{ position: "relative", display: "flex", alignItems: "center", justifyContent: "center" }}>
-              {/* Organic marine luminous aura glow ring */}
-              <div style={{
-                position: "absolute",
-                inset: "-10px",
-                borderRadius: "50%",
-                background: "radial-gradient(circle, rgba(95,191,140,0.48) 0%, rgba(28,122,120,0.18) 60%, transparent 80%)",
-                filter: "blur(10px)",
-                animation: "logoAuraPulse 4.5s ease-in-out infinite",
-                pointerEvents: "none",
-              }} />
-              <img
-                src={LOGO_SRC}
-                alt="BlueGuard logo"
-                style={{
-                  position: "relative",
-                  width: 74,
-                  height: 74,
-                  objectFit: "contain",
-                  animation: "marineOrganicFloat 6s cubic-bezier(0.45, 0.05, 0.55, 0.95) infinite",
-                  willChange: "transform, filter",
-                }}
-              />
-            </div>
+            <img
+              src={LOGO_SRC_LIGHT}
+              alt="BlueGuard logo"
+              style={{ width: 74, height: 74, objectFit: "contain" }}
+            />
             <h1 style={{ fontFamily: "var(--font-serif)", fontWeight: 700, fontSize: "clamp(3.1rem, 8.2vw, 5.5rem)", color: "#F7F8F4", letterSpacing: "-0.04em", lineHeight: 1, margin: 0, textShadow: "0 8px 36px rgba(0,0,0,0.45)" }}>BlueGuard</h1>
           </div>
 
@@ -545,8 +554,9 @@ function Features() {
 
         {/* Project cards */}
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(300px, 1fr))", gap: 24 }}>
-          {PROJECTS.map(p => (
-            <div key={p.name}
+          {PROJECTS.map((p, i) => (
+            <Reveal key={p.name} delay={i * 100}>
+            <div
               style={{ background: "#fff", border: "1px solid #E7DEC7", borderRadius: 16, overflow: "hidden", transition: "box-shadow 0.25s, transform 0.25s", cursor: "default" }}
               onMouseEnter={e => { e.currentTarget.style.boxShadow = "0 12px 40px rgba(11,43,51,0.13)"; e.currentTarget.style.transform = "translateY(-4px)"; }}
               onMouseLeave={e => { e.currentTarget.style.boxShadow = "none"; e.currentTarget.style.transform = "none"; }}>
@@ -603,6 +613,7 @@ function Features() {
                 </div>
               </div>
             </div>
+            </Reveal>
           ))}
         </div>
 
@@ -643,14 +654,16 @@ function Workflow() {
 
         <div className="workflow-row">
           <div className="workflow-line" />
-          {steps.map(s => (
-            <div key={s.n} className="flow-step">
+          {steps.map((s, i) => (
+            <Reveal key={s.n} delay={i * 90} style={{ flex: 1, minWidth: 150 }}>
+            <div className="flow-step">
               <div className="step-num">{s.n}</div>
               <div>
                 <h3 style={{ fontFamily: "var(--font-serif)", fontWeight: 700, fontSize: "1.05rem", color: "#F7F8F4", margin: "0 0 8px", letterSpacing: "-0.01em" }}>{s.title}</h3>
                 <p style={{ fontSize: "0.85rem", color: "#8FB4BB", lineHeight: 1.65, margin: 0, maxWidth: 220 }}>{s.desc}</p>
               </div>
             </div>
+            </Reveal>
           ))}
         </div>
       </div>
@@ -788,7 +801,7 @@ function Footer() {
     <footer style={{ background: "#0B2B33", borderTop: "1px solid rgba(255,255,255,0.06)", padding: "48px 24px 32px" }}>
       <div style={{ maxWidth: 1280, margin: "0 auto", display: "flex", flexDirection: "column", alignItems: "center", gap: 18, textAlign: "center" }}>
         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-          <img src={LOGO_SRC} alt="BlueGuard logo" style={{ width: 24, height: 24, objectFit: "contain" }} />
+          <img src={LOGO_SRC_LIGHT} alt="BlueGuard logo" style={{ width: 24, height: 24, objectFit: "contain" }} />
           <span style={{ fontFamily: "var(--font-serif)", fontWeight: 700, fontSize: "1.15rem", color: "#F7F8F4", letterSpacing: "-0.02em" }}>BlueGuard</span>
         </div>
         <div style={{ display: "flex", gap: 24, flexWrap: "wrap", justifyContent: "center" }}>
