@@ -1,4 +1,5 @@
 import os
+import certifi
 
 from pymongo import MongoClient
 from dotenv import load_dotenv
@@ -13,6 +14,7 @@ if not MONGO_URI:
 
 client = MongoClient(
     MONGO_URI,
+    tlsCAFile=certifi.where(),
     serverSelectionTimeoutMS=10000,
     connectTimeoutMS=20000,
     socketTimeoutMS=20000,
@@ -44,11 +46,7 @@ verification_collection = db["verification"]
 # ============================================================
 
 try:
-
     client.admin.command("ping")
-
-    print("✅ MongoDB connected successfully!")
-
+    print("[OK] MongoDB connected successfully!")
 except Exception as e:
-
-    print("❌ MongoDB connection failed:", e)
+    print("[WARN] MongoDB connection notice:", str(e))
