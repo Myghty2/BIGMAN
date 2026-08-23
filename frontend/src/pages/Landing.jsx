@@ -94,6 +94,10 @@ function GlobalStyles() {
       .mobile-menu { display: none; flex-direction: column; gap: 4px; background: var(--color-navy); border-top: 1px solid rgba(255,255,255,0.08); padding: 16px 24px; }
       .mobile-menu.open { display: flex; }
 
+      .photo-band-grid { display: grid; grid-template-columns: repeat(4, 1fr); width: 100%; height: 290px; }
+      .stats-band-grid { display: grid; grid-template-columns: repeat(4, 1fr); width: 100%; max-width: 100%; }
+      .stat-col { display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 0 16px; }
+
       @media (max-width: 900px) {
         .nav-desktop { display: none !important; }
         .nav-mobile-btn { display: flex !important; }
@@ -106,10 +110,16 @@ function GlobalStyles() {
         .workflow-line { display: none; }
         .flow-step { flex-direction: row !important; text-align: left !important; gap: 18px !important; }
         .hero-glass { padding: 48px 36px 38px !important; border-radius: 28px !important; }
+        .photo-band-grid { grid-template-columns: repeat(2, 1fr) !important; height: auto !important; }
+        .photo-band-grid > div { height: 210px !important; }
+        .stats-band-grid { grid-template-columns: repeat(2, 1fr) !important; gap: 36px 0 !important; }
       }
       @media (max-width: 640px) {
         .cap-badge { white-space: normal; }
         .hero-glass { padding: 36px 20px 28px !important; border-radius: 22px !important; }
+        .photo-band-grid { grid-template-columns: 1fr !important; }
+        .photo-band-grid > div { height: 190px !important; }
+        .stats-band-grid { grid-template-columns: 1fr !important; gap: 30px !important; }
       }
     `}</style>
   );
@@ -395,15 +405,15 @@ function PhotoBand() {
   ];
   return (
     <section style={{ background: "#0B2B33", padding: "0" }}>
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", height: 280 }}>
+      <div className="photo-band-grid">
         {photos.map((p, i) => (
           <div key={p.src} style={{ position: "relative", overflow: "hidden", background: "#071C21" }}>
             <img src={p.src} alt={p.alt} style={{ width: "100%", height: "100%", objectFit: "cover", transition: "transform 0.6s ease", display: "block" }}
               onMouseEnter={e => (e.currentTarget.style.transform = "scale(1.06)")}
               onMouseLeave={e => (e.currentTarget.style.transform = "scale(1)")} />
-            <div style={{ position: "absolute", inset: 0, background: "linear-gradient(0deg, rgba(7,28,33,0.72) 0%, transparent 60%)" }} />
-            <span style={{ position: "absolute", bottom: 14, left: 14, fontFamily: "var(--font-mono)", fontSize: "0.62rem", letterSpacing: "0.1em", textTransform: "uppercase", color: "rgba(183,205,208,0.8)" }}>{p.label}</span>
-            <div style={{ position: "absolute", top: 12, right: 12, fontFamily: "var(--font-mono)", fontSize: "0.6rem", color: "#1C7A78", letterSpacing: "0.06em" }}>0{i + 1}</div>
+            <div style={{ position: "absolute", inset: 0, background: "linear-gradient(0deg, rgba(7,28,33,0.78) 0%, transparent 60%)" }} />
+            <span style={{ position: "absolute", bottom: 16, left: 16, fontFamily: "var(--font-mono)", fontSize: "0.68rem", fontWeight: 600, letterSpacing: "0.12em", textTransform: "uppercase", color: "#CFE1E3" }}>{p.label}</span>
+            <div style={{ position: "absolute", top: 14, right: 16, fontFamily: "var(--font-mono)", fontSize: "0.75rem", fontWeight: 600, color: "#5FBF8C", letterSpacing: "0.06em" }}>0{i + 1}</div>
           </div>
         ))}
       </div>
@@ -411,7 +421,7 @@ function PhotoBand() {
   );
 }
 
-// ── Stats Banner (exact open layout matching reference) ──────────────────────
+// ── Stats Banner (aligned directly beneath the 4 pictures) ───────────────────
 function StatCard({ stat }) {
   const ref = useRef(null);
   const visible = useOnScreen(ref, "-60px");
@@ -424,18 +434,18 @@ function StatCard({ stat }) {
   return (
     <div
       ref={ref}
+      className="stat-col"
       style={{
         opacity: visible ? 1 : 0,
         transform: visible ? "translateY(0)" : "translateY(16px)",
         transition: "opacity 0.6s ease, transform 0.6s ease",
-        textAlign: "center",
       }}
     >
       <div style={{ display: "flex", alignItems: "baseline", justifyContent: "center", gap: 6 }}>
         <span style={{
           fontFamily: "var(--font-serif)",
           fontWeight: 700,
-          fontSize: "clamp(2.8rem, 4.2vw, 3.8rem)",
+          fontSize: "clamp(2.5rem, 4vw, 3.6rem)",
           color: "#0B2B33",
           letterSpacing: "-0.03em",
           lineHeight: 1,
@@ -445,7 +455,7 @@ function StatCard({ stat }) {
         </span>
         <span style={{
           fontFamily: "var(--font-sans)",
-          fontSize: "1.1rem",
+          fontSize: "clamp(0.95rem, 1.2vw, 1.15rem)",
           color: "#1C7A78",
           fontWeight: 600,
           letterSpacing: "0.01em"
@@ -455,10 +465,13 @@ function StatCard({ stat }) {
       </div>
       <p style={{
         fontFamily: "var(--font-sans)",
-        fontSize: "0.95rem",
+        fontSize: "clamp(0.85rem, 1.05vw, 0.96rem)",
         color: "#54767D",
         fontWeight: 500,
-        margin: "12px 0 0"
+        margin: "12px 0 0",
+        textAlign: "center",
+        maxWidth: 240,
+        lineHeight: 1.45
       }}>
         {stat.label}
       </p>
@@ -474,8 +487,8 @@ function StatsBanner() {
     { value: "12", unit: "chains", label: "Blockchain anchors active" },
   ];
   return (
-    <section style={{ background: "#F3EEE1", borderTop: "1px solid #E7DEC7", borderBottom: "1px solid #E7DEC7", padding: "64px 24px 72px" }}>
-      <div style={{ maxWidth: 1280, margin: "0 auto", display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: 32 }}>
+    <section style={{ background: "#F3EEE1", borderTop: "1px solid #E7DEC7", borderBottom: "1px solid #E7DEC7", padding: "60px 0 68px" }}>
+      <div className="stats-band-grid">
         {stats.map(s => <StatCard key={s.label} stat={s} />)}
       </div>
     </section>
