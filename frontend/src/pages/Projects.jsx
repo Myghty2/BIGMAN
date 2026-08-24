@@ -1,3 +1,4 @@
+import ProjectEvidenceTimeline from "../components/ProjectEvidenceTimeline";
 import { getScopedProjects } from "../services/scopeService";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Link, useParams, useSearchParams } from "react-router-dom";
@@ -703,78 +704,10 @@ export default function Projects() {
         {/* TAB 3: EVIDENCE LIST */}
         {activeTab === "evidence" && (
           <div className="rounded-3xl border border-slate-200 bg-white p-6 sm:p-8 shadow-sm">
-            <div className="flex items-center justify-between border-b border-slate-100 pb-4">
-              <div>
-                <h3 className="dashboard-card-title text-xl font-bold text-slate-900">
-                  Submitted Field Evidence ({evidenceList.length})
-                </h3>
-                <p className="mt-1 text-xs sm:text-sm text-slate-500">
-                  Geotagged surveys, drone imagery and soil test logs submitted for {selectedProject?.name}.
-                </p>
-              </div>
-
-              <Link
-                to={`/evidence?project=${selectedProject?.id}`}
-                className="inline-flex items-center gap-2 rounded-2xl bg-brand-teal px-5 py-2.5 text-xs sm:text-sm font-bold text-white shadow-sm hover:bg-deep-navy"
-              >
-                <Plus size={16} />
-                <span>Upload New Evidence</span>
-              </Link>
-            </div>
-
-            <div className="mt-6">
-              {evidenceList.length > 0 ? (
-                <div className="space-y-3">
-                  {evidenceList.map((item, idx) => (
-                    <div
-                      key={item.id || idx}
-                      className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 rounded-2xl border border-slate-200 bg-slate-50 p-4"
-                    >
-                      <div className="flex items-center gap-3.5 min-w-0">
-                        <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-sand text-deep-navy">
-                          <FileCheck2 size={20} />
-                        </span>
-                        <div className="min-w-0">
-                          <div className="flex items-center gap-2">
-                            <span className="font-mono text-xs font-bold text-brand-teal">
-                              {item.id || `EV-${idx + 1}`}
-                            </span>
-                            <span className="rounded-md bg-white border border-slate-200 px-2 py-0.5 text-xs font-bold text-slate-700">
-                              {item.evidenceType || "Field Survey"}
-                            </span>
-                          </div>
-                          <p className="mt-1 text-sm font-semibold text-slate-800 line-clamp-1">
-                            {item.description || "Field evidence attached for cross-validation"}
-                          </p>
-                          <p className="text-xs text-slate-400">
-                            {item.files?.length || 1} files attached • Geotagged at {selectedProject?.location}
-                          </p>
-                        </div>
-                      </div>
-
-                      <span className="rounded-full bg-seagrass/15 border border-seagrass/30 px-3 py-1 text-xs font-bold text-emerald-800 self-start sm:self-auto">
-                        {item.status || "Verified"}
-                      </span>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <div className="rounded-2xl border border-dashed border-slate-300 p-8 text-center">
-                  <UploadCloud size={36} className="mx-auto text-slate-400" />
-                  <p className="mt-3 text-base font-bold text-slate-800">No field evidence uploaded yet</p>
-                  <p className="mt-1 text-xs sm:text-sm text-slate-500">
-                    Upload drone scans, geotagged photos or sediment core lab reports to initiate MRV cross-validation.
-                  </p>
-                  <Link
-                    to={`/evidence?project=${selectedProject?.id}`}
-                    className="mt-4 inline-flex items-center gap-2 rounded-xl bg-brand-teal px-5 py-2 text-xs sm:text-sm font-bold text-white shadow-sm hover:bg-deep-navy"
-                  >
-                    <Plus size={16} />
-                    <span>Submit Evidence Now</span>
-                  </Link>
-                </div>
-              )}
-            </div>
+            <ProjectEvidenceTimeline
+              project={selectedProject}
+              rawEvidenceList={evidenceList}
+            />
           </div>
         )}
       </section>

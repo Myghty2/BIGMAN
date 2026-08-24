@@ -1,3 +1,4 @@
+import ProjectEvidenceTimeline from "../components/ProjectEvidenceTimeline";
 import { useEffect, useState, useMemo } from "react";
 import { useNavigate, useSearchParams, Link } from "react-router-dom";
 import greenWater from "../assets/greenWater.jpg";
@@ -533,6 +534,18 @@ export default function Evidence() {
           </div>
         </div>
       </div>
+      
+      {/* =========================================================
+          HISTORICAL EVIDENCE PHOTO TIMELINE
+          ========================================================= */}
+      {selectedProjectData && (
+        <section className="mt-8 rounded-3xl border border-slate-200 bg-white p-6 sm:p-8 shadow-sm">
+          <ProjectEvidenceTimeline
+            project={selectedProjectData}
+            rawEvidenceList={[]}
+          />
+        </section>
+      )}
     </div>
   );
 }
