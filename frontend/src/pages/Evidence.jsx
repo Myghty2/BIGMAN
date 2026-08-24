@@ -1,6 +1,5 @@
-import { getScopedProjects } from "../services/scopeService";
-import { useEffect, useState } from "react";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { useEffect, useState, useMemo } from "react";
+import { useNavigate, useSearchParams, Link } from "react-router-dom";
 import greenWater from "../assets/greenWater.jpg";
 import {
   Calendar,
@@ -25,9 +24,13 @@ import {
   Trash2,
   UploadCloud,
   Waves,
+  PlusCircle,
+  AlertCircle,
 } from "lucide-react";
 import { projects as seedProjects } from "../data/mockData";
 import { submitEvidenceBundle } from "../services/evidenceService";
+import { getCurrentUser } from "../services/authService";
+import { getScopedProjects } from "../services/scopeService";
 
 const STORAGE_KEY = "blueguard_projects";
 
@@ -62,29 +65,45 @@ function formatFileSize(size) {
 export default function Evidence() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const projectsList = loadProjects();
+  const currentUser = getCurrentUser();
+
+  const allProjects = loadProjects();
+  
+  // Strictly filter projects belonging ONLY to the logged-in organization
+  const availableProjects = useMemo(() => {
+    return getScopedProjects(allProjects);
+  }, [allProjects]);
 
   const queryProject = searchParams.get("project");
   const [selectedProject, setSelectedProject] = useState(
-    queryProject && projectsList.some((p) => p.id === queryProject)
+    queryProject && availableProjects.some((p) => p.id === queryProject)
       ? queryProject
-      : projectsList[0]?.id || "BG-001"
+      : availableProjects[0]?.id || ""
   );
 
   useEffect(() => {
-    const qp = searchParams.get("project");
-    if (qp && projectsList.some((p) => p.id === qp)) {
-      setSelectedProject(qp);
+    if (availableProjects.length > 0) {
+      const qp = searchParams.get("project");
+      if (qp && availableProjects.some((p) => p.id === qp)) {
+        setSelectedProject(qp);
+      } else if (!availableProjects.some((p) => p.id === selectedProject)) {
+        setSelectedProject(availableProjects[0]?.id || "");
+      }
+    } else {
+      setSelectedProject("");
     }
-  }, [searchParams, projectsList]);
+  }, [searchParams, availableProjects]);
+
   const [evidenceType, setEvidenceType] = useState("Restoration Progress");
   const [description, setDescription] = useState("");
   const [files, setFiles] = useState([]);
   const [submitted, setSubmitted] = useState(false);
   const [dragging, setDragging] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
 
-  const selectedProjectData =
-    projectsList.find((p) => p.id === selectedProject) || projectsList[0];
+  const selectedProjectData = useMemo(() => {
+    return availableProjects.find((p) => p.id === selectedProject) || availableProjects[0] || null;
+  }, [availableProjects, selectedProject]);
 
   const totalFileSize = files.reduce((total, file) => total + (file.size || 0), 0);
 
@@ -116,11 +135,9 @@ export default function Evidence() {
     );
   };
 
-  const [submitting, setSubmitting] = useState(false);
-
   const handleSubmit = async () => {
     if (!selectedProject || files.length === 0) {
-      alert("Please select a project and upload at least one evidence file.");
+      alert("Please select one of your organization's projects and upload at least one evidence file.");
       return;
     }
 
@@ -143,6 +160,7 @@ export default function Evidence() {
       uploadedBy: currentUser?.organizationName || currentUser?.name || "Restoration Partner",
       organizationId: currentUser?.id || currentUser?.uid || "ORG-001",
       organizationEmail: currentUser?.officialEmail || currentUser?.email || "",
+      organizationName: currentUser?.organizationName || currentUser?.name || "Restoration Partner",
       status: "Pending Verification",
     };
 
@@ -160,23 +178,67 @@ export default function Evidence() {
     }, 700);
   };
 
+  // If organization has NO registered projects yet, show strict isolation empty state
+  if (availableProjects.length === 0) {
+    return (
+      <div className="min-h-full bg-slate-50 p-6 lg:p-8">
+        <header className="relative overflow-hidden rounded-3xl border border-white/10 shadow-xl">
+          <img
+            src={greenWater}
+            alt="Coastal mangrove water"
+            className="absolute inset-0 h-full w-full object-cover scale-105"
+          />
+          <div className="absolute inset-0 bg-gradient-to-r from-deep-navy/95 via-brand-teal/85 to-seagrass/75 backdrop-blur-[1.5px]" />
+          <div className="relative z-10 p-8 sm:p-10">
+            <div className="inline-flex items-center gap-2.5 rounded-full border border-sand/30 bg-sand/15 px-4 py-2 text-xs sm:text-sm font-extrabold tracking-wider text-sand backdrop-blur-md">
+              <Leaf size={18} className="text-emerald-300" />
+              <span>ORGANIZATION EVIDENCE PORTAL</span>
+            </div>
+            <h1 className="dashboard-display mt-3 text-3xl sm:text-4xl lg:text-5xl font-black tracking-tight text-white">
+              Submit Field Evidence
+            </h1>
+            <p className="mt-2.5 text-sm sm:text-base font-medium text-sand/90 max-w-2xl">
+              Upload geotagged drone orthomosaics, vegetation surveys, and sediment core lab reports for your restoration sites.
+            </p>
+          </div>
+        </header>
+
+        <div className="mt-8 rounded-3xl border border-dashed border-slate-300 bg-white p-12 text-center shadow-sm max-w-2xl mx-auto">
+          <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-teal-50 border border-teal-200 text-brand-teal mb-4">
+            <FolderOpen size={32} />
+          </div>
+          <h2 className="text-xl font-bold text-slate-900">No Restoration Sites Registered Yet</h2>
+          <p className="mt-2 text-sm text-slate-600 leading-relaxed">
+            Your organization ({currentUser?.organizationName || "Your Organization"}) does not have any registered restoration projects yet. You can only submit evidence for sites owned by your organization.
+          </p>
+          <div className="mt-6">
+            <Link
+              to="/projects?new=true"
+              className="inline-flex items-center gap-2 rounded-2xl bg-brand-teal px-6 py-3.5 text-sm font-bold text-white shadow-lg hover:bg-deep-navy transition"
+            >
+              <PlusCircle size={18} />
+              <span>Register Your First Restoration Site</span>
+            </Link>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-full bg-slate-50 p-6 lg:p-8">
       {/* =========================================================
-          HERO BANNER (FULL WIDTH ALIGNMENT MATCHING OTHER PAGES)
+          HERO BANNER
           ========================================================= */}
       <header className="relative overflow-hidden rounded-3xl border border-white/10 shadow-xl">
-        {/* Dappled Sunlit Green Water Background */}
         <img
           src={greenWater}
           alt="Coastal mangrove water"
           className="absolute inset-0 h-full w-full object-cover scale-105"
         />
 
-        {/* Deep Navy to Brand Teal Gradient Overlay */}
         <div className="absolute inset-0 bg-gradient-to-r from-deep-navy/95 via-brand-teal/85 to-seagrass/75 backdrop-blur-[1.5px]" />
 
-        {/* Ambient Glows */}
         <div className="pointer-events-none absolute -right-16 -top-20 h-64 w-64 rounded-full bg-sand/15 blur-3xl" />
         <div className="pointer-events-none absolute -left-16 -bottom-16 h-72 w-72 rounded-full bg-seagrass/30 blur-3xl" />
 
@@ -196,27 +258,15 @@ export default function Evidence() {
                 Submit Field Evidence
               </h1>
 
-              <p className="mt-3 text-base sm:text-lg lg:text-xl font-medium leading-relaxed text-slate-100">
-                Upload geotagged field surveys, high-resolution drone orthomosaics, soil carbon lab reports, and seedling records for automated satellite cross-validation.
+              <p className="mt-3 text-base sm:text-lg lg:text-xl font-medium leading-relaxed text-slate-100 max-w-2xl">
+                Upload geotagged field photos, drone orthomosaics, planting logs, and sediment lab tests for {currentUser?.organizationName || "your organization"}.
               </p>
             </div>
 
-            {/* Location Pill */}
-            {selectedProjectData && (
-              <div className="rounded-2xl border border-white/20 bg-white/15 p-5 text-white shadow-lg backdrop-blur-md min-w-[290px]">
-                <div className="flex items-center gap-2 text-xs sm:text-sm font-bold uppercase tracking-wider text-sand">
-                  <MapPin size={16} className="text-emerald-300" />
-                  <span>Target Site Location</span>
-                </div>
-                <p className="mt-1.5 font-bold text-lg text-white truncate">
-                  {selectedProjectData.name}
-                </p>
-                <p className="mt-0.5 text-xs sm:text-sm text-slate-200 truncate">
-                  {selectedProjectData.location}
-                </p>
-                <p className="mt-2 font-mono text-xs font-semibold text-sand">
-                  GPS: {selectedProjectData.coordinates ? selectedProjectData.coordinates.join(", ") : "21.9497, 89.1833"}
-                </p>
+            {submitted && (
+              <div className="flex items-center gap-2 rounded-2xl border border-emerald-300/40 bg-emerald-500/20 px-4 py-3 text-emerald-200 backdrop-blur-md">
+                <CheckCircle2 size={18} className="text-emerald-300" />
+                <span className="text-sm font-bold">Evidence Bundle Uploaded!</span>
               </div>
             )}
           </div>
@@ -226,9 +276,9 @@ export default function Evidence() {
             <div className="rounded-2xl border border-white/10 bg-white/[0.07] p-4 backdrop-blur-sm">
               <p className="text-xs sm:text-sm font-bold uppercase tracking-wider text-sand">Active Project Site</p>
               <p className="dashboard-display mt-1 text-xl sm:text-2xl font-black text-white truncate">
-                {selectedProjectData?.name || "Selected Plot"}
+                {selectedProjectData?.name || "Selected Site"}
               </p>
-              <p className="mt-0.5 text-xs text-slate-200">{selectedProjectData?.id || "BG-001"} • {selectedProjectData?.area || "100 ha"}</p>
+              <p className="mt-0.5 text-xs text-slate-200">{selectedProjectData?.id} • {selectedProjectData?.area || selectedProjectData?.hectares || "100 ha"}</p>
             </div>
 
             <div className="rounded-2xl border border-white/10 bg-white/[0.07] p-4 backdrop-blur-sm">
@@ -240,7 +290,7 @@ export default function Evidence() {
             </div>
 
             <div className="rounded-2xl border border-white/10 bg-white/[0.07] p-4 backdrop-blur-sm">
-              <p className="text-xs sm:text-sm font-bold uppercase tracking-wider text-sand">Files Ingested</p>
+              <p className="text-xs sm:text-sm font-bold uppercase tracking-wider text-sand">Files Attached</p>
               <p className="dashboard-display mt-1 text-xl sm:text-2xl font-black text-white">
                 {files.length} <span className="text-sm font-medium text-sand">({formatFileSize(totalFileSize)})</span>
               </p>
@@ -259,14 +309,14 @@ export default function Evidence() {
       </header>
 
       {/* =========================================================
-          PROJECT SELECTION & EVIDENCE CATEGORY
+          PROJECT SELECTION & EVIDENCE CATEGORY (STRICTLY SCOPED)
           ========================================================= */}
       <section className="mt-8 rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
         <div className="grid gap-6 md:grid-cols-2">
           <div>
             <label className="mb-2 flex items-center gap-2 text-xs sm:text-sm font-bold uppercase tracking-wider text-slate-700">
               <FolderOpen size={18} className="text-brand-teal" />
-              Select Restoration Site *
+              Select Your Restoration Site *
             </label>
             <div className="relative">
               <select
@@ -274,7 +324,7 @@ export default function Evidence() {
                 onChange={(e) => setSelectedProject(e.target.value)}
                 className="w-full appearance-none rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3.5 pr-10 text-sm sm:text-base font-bold text-slate-900 outline-none transition focus:border-brand-teal focus:bg-white"
               >
-                {projectsList.map((p) => (
+                {availableProjects.map((p) => (
                   <option key={p.id} value={p.id}>
                     {p.id} • {p.name} ({p.location})
                   </option>
@@ -311,49 +361,47 @@ export default function Evidence() {
       <div className="mt-8 grid gap-8 lg:grid-cols-[minmax(0,1.6fr)_minmax(340px,1fr)]">
         {/* LEFT: DROPZONE & ATTACHED FILES */}
         <div className="space-y-8">
-          {/* Upload card */}
           <section className="rounded-3xl border border-slate-200 bg-white p-6 sm:p-8 shadow-sm">
             <div className="mb-5 flex items-center justify-between">
               <div>
                 <h2 className="dashboard-card-title text-xl sm:text-2xl font-bold text-slate-900">
                   Evidence Files & Media
                 </h2>
-                <p className="mt-1 text-sm sm:text-base text-slate-500">
-                  Upload geotagged field photos, aerial drone videos, survey forms or soil lab tests.
+                <p className="mt-1 text-xs sm:text-sm text-slate-500">
+                  Upload high-res photos, drone surveys, or laboratory carbon density sheets.
                 </p>
               </div>
-              <span className="rounded-full bg-sand/40 border border-sand px-4 py-1.5 text-xs sm:text-sm font-bold text-deep-navy">
-                {files.length > 0 ? `${files.length} attached` : "0 attached"}
+              <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-bold text-slate-700">
+                {files.length} attached
               </span>
             </div>
 
-            <label
-              htmlFor="evidence-files"
+            <div
               onDrop={handleDrop}
               onDragOver={handleDragOver}
               onDragLeave={handleDragLeave}
-              className={`group flex min-h-[290px] cursor-pointer flex-col items-center justify-center rounded-2xl border-2 border-dashed p-8 text-center transition-all duration-300 ${
+              className={`relative flex min-h-[260px] flex-col items-center justify-center rounded-3xl border-2 border-dashed p-8 text-center transition ${
                 dragging
-                  ? "border-brand-teal bg-brand-teal/10 shadow-inner"
-                  : "border-slate-300 bg-slate-50/80 hover:border-brand-teal hover:bg-brand-teal/[0.03]"
+                  ? "border-brand-teal bg-teal-50/50 scale-[0.99]"
+                  : "border-slate-300 bg-slate-50 hover:border-brand-teal/60 hover:bg-slate-50/80"
               }`}
             >
-              <span className="flex h-16 w-16 items-center justify-center rounded-2xl bg-sand text-deep-navy shadow-sm transition group-hover:scale-110 group-hover:bg-brand-teal group-hover:text-white">
+              <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-brand-teal text-white shadow-md">
                 <UploadCloud size={32} />
-              </span>
+              </div>
 
-              <h3 className="mt-5 text-xl sm:text-2xl font-bold text-slate-900">
-                Drag & Drop Evidence Files
+              <h3 className="mt-4 text-base sm:text-lg font-bold text-slate-900">
+                Drag and drop your evidence files here
               </h3>
-              <p className="mt-1.5 text-sm sm:text-base text-slate-500">
-                or <span className="font-bold text-brand-teal hover:underline">browse files from device</span>
+              <p className="mt-1 text-xs sm:text-sm text-slate-500">
+                or click to browse from your device
               </p>
 
-              <div className="mt-5 flex flex-wrap justify-center gap-2">
+              <div className="mt-4 flex flex-wrap justify-center gap-1.5">
                 {acceptedFormats.map((format) => (
                   <span
                     key={format}
-                    className="rounded-xl bg-white px-3 py-1.5 text-xs sm:text-sm font-bold text-slate-600 border border-slate-200 shadow-sm"
+                    className="rounded-lg bg-white border border-slate-200 px-2 py-0.5 text-[11px] font-bold text-slate-600 shadow-sm"
                   >
                     {format}
                   </span>
@@ -361,52 +409,41 @@ export default function Evidence() {
               </div>
 
               <input
-                id="evidence-files"
                 type="file"
                 multiple
-                accept=".jpg,.jpeg,.png,.mp4,.pdf,.geojson,.kml"
-                className="hidden"
                 onChange={handleFiles}
+                className="absolute inset-0 h-full w-full cursor-pointer opacity-0"
               />
-            </label>
+            </div>
 
-            {/* Selected Files List */}
+            {/* Attached Files List */}
             {files.length > 0 && (
-              <div className="mt-6">
-                <div className="mb-3 flex items-center justify-between">
-                  <p className="text-xs sm:text-sm font-bold uppercase tracking-wider text-slate-700">
-                    Selected Files ({files.length}) • {formatFileSize(totalFileSize)}
-                  </p>
-                  <FileCheck2 size={18} className="text-brand-teal" />
-                </div>
-
-                <div className="space-y-3 max-h-64 overflow-y-auto">
+              <div className="mt-6 space-y-3">
+                <h4 className="text-xs font-bold uppercase tracking-wider text-slate-600">
+                  Ready to Ingest ({files.length} files • {formatFileSize(totalFileSize)})
+                </h4>
+                <div className="grid gap-2 sm:grid-cols-2">
                   {files.map((file, index) => (
                     <div
-                      key={`${file.name}-${index}`}
-                      className="flex items-center justify-between gap-3 rounded-2xl border border-slate-200 bg-slate-50 p-4"
+                      key={index}
+                      className="flex items-center justify-between rounded-2xl border border-slate-200 bg-slate-50 p-3.5 text-xs font-semibold text-slate-800 shadow-sm"
                     >
-                      <div className="flex items-center gap-3.5 min-w-0">
-                        <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-sand text-deep-navy">
-                          <FileText size={18} />
-                        </span>
-                        <div className="min-w-0">
-                          <p className="truncate text-sm sm:text-base font-bold text-slate-900">
-                            {file.name}
-                          </p>
-                          <p className="text-xs text-slate-500">
-                            {file.type || "File"} • {formatFileSize(file.size)}
-                          </p>
-                        </div>
+                      <div className="flex items-center gap-2.5 truncate">
+                        <FileCheck2 size={18} className="text-brand-teal shrink-0" />
+                        <span className="truncate">{file.name}</span>
                       </div>
-                      <button
-                        type="button"
-                        onClick={() => removeFile(index)}
-                        className="rounded-xl p-2 text-slate-400 hover:bg-coral/10 hover:text-coral transition"
-                        title="Remove file"
-                      >
-                        <Trash2 size={18} />
-                      </button>
+                      <div className="flex items-center gap-3 shrink-0 ml-2">
+                        <span className="text-slate-400 font-mono text-[11px]">
+                          {formatFileSize(file.size)}
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => removeFile(index)}
+                          className="text-slate-400 hover:text-rose-600 transition"
+                        >
+                          <Trash2 size={16} />
+                        </button>
+                      </div>
                     </div>
                   ))}
                 </div>
@@ -414,140 +451,88 @@ export default function Evidence() {
             )}
           </section>
 
-          {/* Description Section */}
+          {/* Description & Field Notes */}
           <section className="rounded-3xl border border-slate-200 bg-white p-6 sm:p-8 shadow-sm">
-            <div className="flex items-center gap-2 text-slate-900">
-              <FileText size={20} className="text-brand-teal" />
-              <h3 className="dashboard-card-title text-xl sm:text-2xl font-bold text-slate-900">
-                Field Observations & Surveyor Notes
-              </h3>
-            </div>
-            <p className="mt-1 text-sm sm:text-base text-slate-500">
-              Provide context regarding mangrove species planting, nursery survival, tidal conditions or sampling depth.
+            <h3 className="dashboard-card-title text-base sm:text-lg font-bold text-slate-900 mb-2">
+              Field Observations & Surveyor Notes
+            </h3>
+            <p className="text-xs sm:text-sm text-slate-500 mb-4">
+              Describe the methodology, tide height during capture, camera specs, or seedling survival notes.
             </p>
-
             <textarea
+              rows={4}
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              rows={5}
-              maxLength={500}
-              placeholder="Detail the field surveyor observations, drone elevation, weather conditions, or mangrove seedling density..."
-              className="mt-4 w-full resize-none rounded-2xl border border-slate-200 bg-slate-50 p-4 text-base leading-relaxed text-slate-900 outline-none transition focus:border-brand-teal focus:bg-white"
+              placeholder="e.g., Drone flight conducted at 50m AGL during low tide. 1,400 Avicennia marina seedlings monitored with 91% survival..."
+              className="w-full rounded-2xl border border-slate-200 bg-slate-50 p-4 text-xs sm:text-sm font-medium text-slate-900 outline-none focus:border-brand-teal focus:bg-white transition"
             />
-            <div className="mt-2 text-right text-xs sm:text-sm text-slate-400">
-              {description.length} / 500 characters
-            </div>
           </section>
         </div>
 
-        {/* RIGHT: METADATA & FIELD CHECKLIST */}
-        <div className="space-y-8">
-          {/* Metadata Checklist */}
-          <section className="rounded-3xl border border-slate-200 bg-white p-6 sm:p-8 shadow-sm">
-            <div className="flex items-center justify-between border-b border-slate-100 pb-4">
-              <div className="flex items-center gap-2 text-slate-900">
-                <ShieldCheck size={22} className="text-seagrass" />
-                <h3 className="dashboard-card-title text-lg sm:text-xl font-bold text-slate-900">
-                  MRV Evidence Manifest
-                </h3>
-              </div>
-              <span className="rounded-xl bg-seagrass/15 p-1.5 text-emerald-800">
-                <CheckCircle2 size={18} />
-              </span>
-            </div>
+        {/* RIGHT: SUBMIT ACTION & SUMMARY */}
+        <div className="space-y-6">
+          <div className="rounded-3xl border border-slate-200 bg-white p-6 sm:p-8 shadow-sm">
+            <h3 className="dashboard-card-title text-lg sm:text-xl font-bold text-slate-900 mb-4">
+              Submit to MRV Pipeline
+            </h3>
 
-            <div className="mt-5 space-y-3">
-              <div className="flex items-center gap-3 rounded-2xl bg-slate-50 p-3.5 border border-slate-100">
-                <CheckCircle2 size={18} className="text-seagrass shrink-0" />
-                <div className="min-w-0 text-xs sm:text-sm font-semibold text-slate-800">
-                  <span>Project Linked: <strong className="text-deep-navy">{selectedProject}</strong></span>
-                </div>
+            <div className="space-y-3.5 text-xs sm:text-sm">
+              <div className="flex justify-between border-b border-slate-100 pb-2.5">
+                <span className="text-slate-500">Submitting Org:</span>
+                <span className="font-bold text-slate-900 truncate max-w-[180px]">
+                  {currentUser?.organizationName || "Organization Partner"}
+                </span>
               </div>
-
-              <div className="flex items-center gap-3 rounded-2xl bg-slate-50 p-3.5 border border-slate-100">
-                <MapPin size={18} className="text-seagrass shrink-0" />
-                <div className="min-w-0 text-xs sm:text-sm font-semibold text-slate-800">
-                  <span>GPS Geotagging: <strong>{selectedProjectData?.coordinates ? `${selectedProjectData.coordinates[0]}, ${selectedProjectData.coordinates[1]}` : "Coordinates Attached"}</strong></span>
-                </div>
+              <div className="flex justify-between border-b border-slate-100 pb-2.5">
+                <span className="text-slate-500">Target Plot:</span>
+                <span className="font-bold text-slate-900 truncate max-w-[180px]">
+                  {selectedProjectData?.name} ({selectedProjectData?.id})
+                </span>
               </div>
-
-              <div className="flex items-center gap-3 rounded-2xl bg-slate-50 p-3.5 border border-slate-100">
-                <Calendar size={18} className="text-seagrass shrink-0" />
-                <div className="min-w-0 text-xs sm:text-sm font-semibold text-slate-800">
-                  <span>Capture Timestamp: <strong>{new Date().toLocaleTimeString()}</strong></span>
-                </div>
+              <div className="flex justify-between border-b border-slate-100 pb-2.5">
+                <span className="text-slate-500">Evidence Category:</span>
+                <span className="font-bold text-brand-teal">{evidenceType}</span>
               </div>
-
-              <div className="flex items-center gap-3 rounded-2xl bg-slate-50 p-3.5 border border-slate-100">
-                <Fingerprint size={18} className="text-seagrass shrink-0" />
-                <div className="min-w-0 text-xs sm:text-sm font-semibold text-slate-800">
-                  <span>IPFS CID Fingerprint: <strong>Automated on Submission</strong></span>
-                </div>
+              <div className="flex justify-between border-b border-slate-100 pb-2.5">
+                <span className="text-slate-500">Storage Target:</span>
+                <span className="font-mono font-bold text-emerald-800">Supabase Bucket</span>
               </div>
             </div>
-          </section>
 
-          {/* Quick Guidelines Card */}
-          <section className="rounded-3xl border border-slate-200 bg-white p-6 sm:p-8 shadow-sm">
-            <div className="flex items-center gap-2">
-              <Info size={20} className="text-brand-teal" />
-              <h3 className="dashboard-card-title text-lg sm:text-xl font-bold text-slate-900">
-                Evidence Best Practices
-              </h3>
+            <button
+              onClick={handleSubmit}
+              disabled={submitting || files.length === 0}
+              className={`mt-6 flex w-full items-center justify-center gap-2 rounded-2xl py-4 text-sm font-bold text-white shadow-lg transition ${
+                submitting || files.length === 0
+                  ? "bg-slate-300 cursor-not-allowed text-slate-500 shadow-none"
+                  : "bg-brand-teal hover:bg-deep-navy active:scale-95 shadow-brand-teal/20"
+              }`}
+            >
+              {submitting ? (
+                <>
+                  <UploadCloud size={18} className="animate-bounce" />
+                  <span>Uploading to Supabase...</span>
+                </>
+              ) : (
+                <>
+                  <Send size={18} />
+                  <span>Submit Evidence Bundle</span>
+                </>
+              )}
+            </button>
+          </div>
+
+          <div className="rounded-3xl border border-emerald-200 bg-emerald-50/60 p-6">
+            <div className="flex items-center gap-2 text-emerald-950 font-bold text-sm">
+              <ShieldCheck size={18} className="text-emerald-700" />
+              <span>Multi-Tenant Security Guarantee</span>
             </div>
-            <p className="mt-1 text-xs sm:text-sm text-slate-500">
-              Ensure highest AI cross-validation confidence score:
+            <p className="mt-2 text-xs leading-relaxed text-emerald-800">
+              Your uploaded evidence files and photographs are cryptographically tagged and isolated to {currentUser?.organizationName || "your organization"}.
             </p>
-
-            <div className="mt-4 space-y-3 text-xs sm:text-sm text-slate-700">
-              <div className="flex items-start gap-2.5 rounded-xl bg-slate-50 p-3 border border-slate-100">
-                <Camera size={16} className="mt-0.5 text-brand-teal shrink-0" />
-                <p><strong>Low-Tide Aerial Photos:</strong> Capture drone flights during low tide to optimize canopy reflectance analysis.</p>
-              </div>
-              <div className="flex items-start gap-2.5 rounded-xl bg-slate-50 p-3 border border-slate-100">
-                <Compass size={16} className="mt-0.5 text-seagrass shrink-0" />
-                <p><strong>EXIF Geotagging:</strong> Ensure device location services are enabled for automated satellite polygon overlap.</p>
-              </div>
-            </div>
-          </section>
+          </div>
         </div>
       </div>
-
-      {/* =========================================================
-          SUBMISSION ACTION FOOTER
-          ========================================================= */}
-      <section className="mt-8 flex flex-col gap-4 rounded-3xl border border-slate-200 bg-white p-6 sm:p-8 shadow-sm sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <p className="text-base sm:text-lg font-bold text-slate-900">Ready to submit evidence for MRV verification?</p>
-          <p className="mt-1 text-xs sm:text-sm text-slate-500">
-            Evidence will be queued for automated Sentinel-2 AI cross-check and expert auditor review.
-          </p>
-        </div>
-
-        <button
-          type="button"
-          onClick={handleSubmit}
-          disabled={submitted || submitting}
-          className="inline-flex items-center justify-center gap-2.5 rounded-2xl bg-brand-teal px-10 py-4 text-base sm:text-lg font-bold text-white shadow-lg transition hover:bg-deep-navy active:scale-95 disabled:opacity-60"
-        >
-          {submitted ? (
-            <>
-              <CheckCircle2 size={20} />
-              <span>Evidence Submitted</span>
-            </>
-          ) : submitting ? (
-            <>
-              <UploadCloud size={20} className="animate-bounce" />
-              <span>Uploading to Supabase & Submitting...</span>
-            </>
-          ) : (
-            <>
-              <Send size={20} />
-              <span>Submit to Verification Queue</span>
-            </>
-          )}
-        </button>
-      </section>
     </div>
   );
 }
