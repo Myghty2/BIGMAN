@@ -1,4 +1,3 @@
-import { exportProjectPdfReport } from "../utils/exportPdfReport";
 import ProjectEvidenceTimeline from "../components/ProjectEvidenceTimeline";
 import { getScopedProjects } from "../services/scopeService";
 import { useEffect, useMemo, useRef, useState } from "react";
@@ -404,16 +403,6 @@ export default function Projects() {
 
               {/* Quick Action Buttons */}
               <div className="flex flex-wrap items-center gap-3 min-w-[280px]">
-                <button
-                  type="button"
-                  onClick={() => exportProjectPdfReport(selectedProject)}
-                  className="inline-flex items-center justify-center gap-2 rounded-2xl border border-sand/40 bg-sand/20 px-5 py-3 text-sm font-bold text-sand shadow-lg transition hover:bg-sand/30 hover:scale-105 active:scale-95 backdrop-blur-md cursor-pointer"
-                  title="One-Click Cryptographic PDF MRV Audit Report & Verra VM0033 Export"
-                >
-                  <Download size={18} className="text-emerald-300" />
-                  <span>Export Verra MRV Dossier (PDF)</span>
-                </button>
-
                 <Link
                   to={`/evidence?project=${selectedProject?.id}`}
                   className="inline-flex items-center justify-center gap-2 rounded-2xl bg-brand-teal px-5 py-3 text-sm font-bold text-white shadow-lg transition hover:bg-deep-navy active:scale-95 border border-white/20"
