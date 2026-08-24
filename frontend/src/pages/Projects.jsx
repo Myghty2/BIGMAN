@@ -183,6 +183,28 @@ export default function Projects() {
   }, [projectsList]);
 
   // Filtered projects
+  
+  const isAdmin = currentUser?.role === "admin" || Boolean(localStorage.getItem("blueguard_admin_session"));
+
+  // Multi-tenant Organization project filter: Organizations can ONLY see their own projects
+  const scopedProjectsList = useMemo(() => {
+    if (isAdmin) return projectsList;
+    const orgId = currentUser?.id || currentUser?.uid;
+    const orgEmail = (currentUser?.officialEmail || currentUser?.email || "").toLowerCase();
+    const orgName = (currentUser?.organizationName || currentUser?.name || "").toLowerCase();
+
+    return scopedProjectsList.filter((p) => {
+      if (p.organizationId && (p.organizationId === orgId || p.organizationId === currentUser?.uid)) return true;
+      if (p.organizationEmail && p.organizationEmail.toLowerCase() === orgEmail) return true;
+      if (p.organizationName && p.organizationName.toLowerCase() === orgName) return true;
+      // Default demo NGO gets the unassigned seed projects
+      if ((orgId === "ORG-001" || orgEmail.includes("demo") || orgEmail.includes("mangrove") || !orgId) && (!p.organizationId || p.organizationId === "ORG-001")) {
+        return true;
+      }
+      return false;
+    });
+  }, [projectsList, currentUser, isAdmin]);
+
   const filteredProjects = useMemo(() => {
     return projectsList.filter((project) => {
       const matchesSearch =

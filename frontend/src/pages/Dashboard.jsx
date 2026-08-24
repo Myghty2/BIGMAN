@@ -78,15 +78,33 @@ export default function Dashboard() {
     return () => window.removeEventListener("storage", refresh);
   }, []);
 
+  
+  const orgScopedProjects = useMemo(() => {
+    if (isAdmin) return projects;
+    const orgId = user?.id || user?.uid;
+    const orgEmail = (user?.officialEmail || user?.email || "").toLowerCase();
+    const orgName = (user?.organizationName || user?.name || "").toLowerCase();
+
+    return projects.filter((p) => {
+      if (p.organizationId && (p.organizationId === orgId || p.organizationId === user?.uid)) return true;
+      if (p.organizationEmail && p.organizationEmail.toLowerCase() === orgEmail) return true;
+      if (p.organizationName && p.organizationName.toLowerCase() === orgName) return true;
+      if ((orgId === "ORG-001" || orgEmail.includes("demo") || orgEmail.includes("mangrove") || !orgId) && (!p.organizationId || p.organizationId === "ORG-001")) {
+        return true;
+      }
+      return false;
+    });
+  }, [projects, user, isAdmin]);
+
   const summary = useMemo(() => {
-    const value = { total: projects.length, draft: 0, submitted: 0, verification: 0, approved: 0, rejected: 0 };
-    projects.forEach((project) => { value[groupStatus(project.status)] += 1; });
+    const value = { total: orgScopedProjects.length, draft: 0, submitted: 0, verification: 0, approved: 0, rejected: 0 };
+    orgScopedProjects.forEach((project) => { value[groupStatus(project.status)] += 1; });
     return value;
   }, [projects]);
 
   const lifecycle = useMemo(() => [
     ["Submitted", summary.submitted || 0],
-    ["Automated analysis", projects.filter((p) => p.status === "Under Automated Analysis").length],
+    ["Automated analysis", orgScopedProjects.filter((p) => p.status === "Under Automated Analysis").length],
     ["Human review", summary.verification],
     ["Approved / rejected", summary.approved + summary.rejected],
   ], [projects, summary]);

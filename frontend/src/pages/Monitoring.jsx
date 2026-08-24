@@ -193,6 +193,29 @@ function MapController({ coordinates, onZoomIn, onZoomOut, onLocate, onFullscree
 }
 
 export default function Monitoring() {
+
+  // Scope project selector to the logged-in organization
+  const organizationProjects = useMemo(() => {
+    const adminSession = localStorage.getItem("blueguard_admin_session");
+    if (adminSession) return projectsList;
+    const orgUser = getCurrentUser();
+    const orgId = orgUser?.id || orgUser?.uid;
+    const orgEmail = (orgUser?.officialEmail || orgUser?.email || "").toLowerCase();
+    const orgName = (orgUser?.organizationName || orgUser?.name || "").toLowerCase();
+
+    const filtered = projectsList.filter((p) => {
+      if (p.organizationId && (p.organizationId === orgId || p.organizationId === orgUser?.uid)) return true;
+      if (p.organizationEmail && p.organizationEmail.toLowerCase() === orgEmail) return true;
+      if (p.organizationName && p.organizationName.toLowerCase() === orgName) return true;
+      if ((orgId === "ORG-001" || orgEmail.includes("demo") || orgEmail.includes("mangrove") || !orgId) && (!p.organizationId || p.organizationId === "ORG-001")) {
+        return true;
+      }
+      return false;
+    });
+
+    return filtered.length > 0 ? filtered : projectsList;
+  }, [projectsList]);
+
   const [searchParams] = useSearchParams();
   const projectsList = loadProjects();
 
@@ -374,7 +397,7 @@ export default function Monitoring() {
                 onChange={(e) => setSelectedProject(e.target.value)}
                 className="w-full appearance-none rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3.5 pr-10 text-sm sm:text-base font-bold text-slate-900 outline-none transition focus:border-brand-teal focus:bg-white"
               >
-                {projectsList.map((p) => (
+                {organizationProjects.map((p) => (
                   <option key={p.id} value={p.id}>
                     {p.id} • {p.name} ({p.location})
                   </option>
