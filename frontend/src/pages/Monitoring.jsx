@@ -283,10 +283,13 @@ export default function Monitoring() {
       console.warn("Live Copernicus API notice, using high-res Sentinel-2 telemetry buffer:", error.message);
       
       // Automatic High-Res Multispectral Fallback
-      const fallbackUrl = selectedProject?.id === "BG-002"
+      const pId = project?.id || selectedProject;
+      const fallbackUrl = (pId === "BG-IND-02" || pId === "BG-002")
         ? konkanImg
-        : selectedProject?.id === "BG-003"
+        : (pId === "BG-IND-04" || pId === "BG-003")
         ? palkbayImg
+        : (pId === "BG-IND-03" || pId === "BG-IND-05")
+        ? greenWaterImg
         : sundarbansImg;
 
       setSatelliteImageUrl(fallbackUrl);

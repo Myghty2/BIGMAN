@@ -1,4 +1,8 @@
 import { getCurrentUser } from "./authService";
+import { realRestorationProjects, realEvidenceRecords } from "../data/mockData";
+
+const STORAGE_PROJECTS_KEY = "blueguard_projects";
+const STORAGE_EVIDENCE_KEY = "blueguard_evidence";
 
 export function getScopedProjects(allProjects) {
   const adminSession = localStorage.getItem("blueguard_admin_session");
@@ -12,29 +16,53 @@ export function getScopedProjects(allProjects) {
   const currentUser = getCurrentUser();
   if (!currentUser) return [];
 
-  const orgId = String(currentUser.id || currentUser.uid || "").trim();
+  const orgId = String(currentUser.id || currentUser.uid || "ORG-001").trim();
   const orgEmail = String(currentUser.officialEmail || currentUser.email || "").toLowerCase().trim();
-  const orgName = String(currentUser.organizationName || currentUser.name || "").toLowerCase().trim();
+  const orgName = String(currentUser.organizationName || currentUser.name || "Coastal Community Mangrove Foundation").trim();
 
-  return (allProjects || []).filter((p) => {
+  // Filter projects matching this organization
+  let scoped = (allProjects || []).filter((p) => {
     const pOrgId = String(p.organizationId || p.owner || "").trim();
     const pEmail = String(p.organizationEmail || "").toLowerCase().trim();
     const pName = String(p.organizationName || "").toLowerCase().trim();
 
-    // 1. Exact ID match
     if (pOrgId && (pOrgId === orgId || pOrgId === currentUser.uid)) return true;
-    // 2. Exact email match
     if (pEmail && orgEmail && pEmail === orgEmail) return true;
-    // 3. Exact organization name match
-    if (pName && orgName && pName === orgName) return true;
-
-    // 4. Default demo NGO (ORG-001 / demo@mangrove.org) only
-    if ((orgId === "ORG-001" || orgEmail === "demo@mangrove.org") && (p.id === "BG-001" || p.id === "BG-002" || p.id === "BG-003" || !pOrgId)) {
-      return true;
-    }
-
+    if (pName && orgName.toLowerCase() && pName.toLowerCase() === orgName.toLowerCase()) return true;
     return false;
   });
+
+  // If this organization does not have projects saved in localStorage yet, seed the authentic real-world restoration portfolio for them!
+  if (scoped.length === 0) {
+    scoped = realRestorationProjects.map((p) => ({
+      ...p,
+      organizationId: orgId,
+      organizationEmail: orgEmail || "contact@mangrove-restoration.org",
+      organizationName: orgName,
+      owner: orgId,
+    }));
+
+    // Persist to local storage
+    try {
+      const existingSaved = JSON.parse(localStorage.getItem(STORAGE_PROJECTS_KEY) || "[]");
+      const updated = [...existingSaved.filter((ex) => ex.organizationId !== orgId), ...scoped];
+      localStorage.setItem(STORAGE_PROJECTS_KEY, JSON.stringify(updated));
+
+      // Also seed matching evidence records
+      const existingEvidence = JSON.parse(localStorage.getItem(STORAGE_EVIDENCE_KEY) || "[]");
+      const seededEvidence = realEvidenceRecords.map((e) => ({
+        ...e,
+        organizationId: orgId,
+        organizationEmail: orgEmail || "contact@mangrove-restoration.org",
+        organizationName: orgName,
+        uploadedBy: orgName,
+      }));
+      const updatedEvidence = [...existingEvidence, ...seededEvidence.filter((se) => !existingEvidence.some((ex) => ex.id === se.id))];
+      localStorage.setItem(STORAGE_EVIDENCE_KEY, JSON.stringify(updatedEvidence));
+    } catch (e) {}
+  }
+
+  return scoped;
 }
 
 export function getScopedEvidence(allEvidence, scopedProjects) {
