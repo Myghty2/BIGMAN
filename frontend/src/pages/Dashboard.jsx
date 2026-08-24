@@ -111,14 +111,14 @@ export default function Dashboard() {
   ], [projects, summary]);
 
   const activity = useMemo(() => [
-    ...projects.map((p) => ({ title: p.name, detail: `Project ${p.status === "Draft" ? "saved as draft" : "submitted"}`, date: p.updatedAt || p.createdAt || p.startDate })),
+    ...orgScopedProjects.map((p) => ({ title: p.name, detail: `Project ${p.status === "Draft" ? "saved as draft" : "submitted"}`, date: p.updatedAt || p.createdAt || p.startDate })),
     ...evidence.map((e) => ({ title: e.name || e.fileName || "Evidence uploaded", detail: "Evidence added for review", date: e.createdAt || e.uploadedAt })),
     ...verifications.map((v) => ({ title: v.projectName || v.projectId || "Verification updated", detail: `Verifier decision: ${v.result || "submitted"}`, date: v.submittedAt || v.createdAt })),
   ].sort((a, b) => new Date(b.date || 0) - new Date(a.date || 0)).slice(0, 5), [projects, evidence, verifications]);
 
   const attention = useMemo(() => projects.filter((p) => ["Draft", "Under Review", "Requires Information"].includes(p.status)), [projects]);
   const carbonImpact = useMemo(() => {
-    const items = projects
+    const items = orgScopedProjects
       .map((project) => ({ ...project, carbonAmount: carbonValue(project.carbon) }))
       .filter((project) => project.carbonAmount > 0)
       .sort((a, b) => b.carbonAmount - a.carbonAmount);
@@ -304,9 +304,55 @@ export default function Dashboard() {
       <Link to="/verification" className="mt-5 inline-flex items-center gap-1.5 text-sm sm:text-base font-semibold text-brand-teal hover:text-deep-navy">Open verification status <ArrowRight size={16} /></Link>
     </section>
 
-    <div className="mt-6 grid gap-6 xl:grid-cols-2">
-      <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm"><h2 className="dashboard-card-title text-lg sm:text-xl font-bold text-slate-900">Recent activity</h2><p className="mt-1 text-sm sm:text-base text-slate-600">Meaningful updates across your organization.</p><div className="mt-5 space-y-3">{activity.length ? activity.map((item, index) => <div key={`${item.title}-${index}`} className="flex gap-3 rounded-xl bg-slate-50 p-4"><span className="mt-2 h-2.5 w-2.5 shrink-0 rounded-full bg-seagrass" /><div className="min-w-0 flex-1"><p className="truncate text-sm sm:text-base font-semibold text-slate-800">{item.title}</p><p className="mt-0.5 text-xs sm:text-sm text-slate-500">{item.detail}</p></div><time className="shrink-0 text-xs sm:text-sm text-slate-400">{shortDate(item.date)}</time></div>) : <Empty text="Activity will appear when you submit a project, upload evidence, or receive a verification update." />}</div></section>
-      <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm"><div className="flex items-center justify-between gap-4"><div><h2 className="dashboard-card-title text-lg sm:text-xl font-bold text-slate-900">Projects needing attention</h2><p className="mt-1 text-sm sm:text-base text-slate-600">Drafts and verification requests that need your action.</p></div><FileWarning size={22} className="text-coral" /></div><div className="mt-5 space-y-3">{attention.length ? attention.map((project) => <Link key={project.id} to={`/projects/${project.id}`} className="flex items-center justify-between gap-3 rounded-xl border border-sand bg-sand/30 p-4 transition hover:border-coral"><div className="min-w-0"><p className="truncate text-sm sm:text-base font-semibold text-slate-800">{project.name}</p><p className="mt-0.5 text-xs sm:text-sm text-slate-600">{project.status === "Draft" ? "Complete and submit this draft" : "Review the requested verification information"}</p></div><ArrowRight size={18} className="shrink-0 text-brand-teal" /></Link>) : <Empty text="No projects require action right now." />}</div></section>
+    <div className={`mt-6 grid gap-6 ${isAdmin ? "xl:grid-cols-2" : "xl:grid-cols-1"}`}>
+      <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+        <h2 className="dashboard-card-title text-lg sm:text-xl font-bold text-slate-900">Recent activity</h2>
+        <p className="mt-1 text-sm sm:text-base text-slate-600">Meaningful updates across your organization.</p>
+        <div className="mt-5 space-y-3">
+          {activity.length ? (
+            activity.map((item, index) => (
+              <div key={`${item.title}-${index}`} className="flex gap-3 rounded-xl bg-slate-50 p-4">
+                <span className="mt-2 h-2.5 w-2.5 shrink-0 rounded-full bg-seagrass" />
+                <div className="min-w-0 flex-1">
+                  <p className="truncate text-sm sm:text-base font-semibold text-slate-800">{item.title}</p>
+                  <p className="mt-0.5 text-xs sm:text-sm text-slate-500">{item.detail}</p>
+                </div>
+                <time className="shrink-0 text-xs sm:text-sm text-slate-400">{shortDate(item.date)}</time>
+              </div>
+            ))
+          ) : (
+            <Empty text="Activity will appear when you submit a project, upload evidence, or receive a verification update." />
+          )}
+        </div>
+      </section>
+
+      {/* Projects Needing Attention is strictly visible to Admin only */}
+      {isAdmin && (
+        <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+          <div className="flex items-center justify-between gap-4">
+            <div>
+              <h2 className="dashboard-card-title text-lg sm:text-xl font-bold text-slate-900">Projects needing attention</h2>
+              <p className="mt-1 text-sm sm:text-base text-slate-600">Drafts and verification requests that need admin action.</p>
+            </div>
+            <FileWarning size={22} className="text-coral" />
+          </div>
+          <div className="mt-5 space-y-3">
+            {attention.length ? (
+              attention.map((project) => (
+                <Link key={project.id} to={`/projects/${project.id}`} className="flex items-center justify-between gap-3 rounded-xl border border-sand bg-sand/30 p-4 transition hover:border-coral">
+                  <div className="min-w-0">
+                    <p className="truncate text-sm sm:text-base font-semibold text-slate-800">{project.name}</p>
+                    <p className="mt-0.5 text-xs sm:text-sm text-slate-600">{project.status === "Draft" ? "Complete and submit this draft" : "Review requested verification information"}</p>
+                  </div>
+                  <ArrowRight size={18} className="shrink-0 text-brand-teal" />
+                </Link>
+              ))
+            ) : (
+              <Empty text="No projects require action right now." />
+            )}
+          </div>
+        </section>
+      )}
     </div>
 
     <section className="mt-6"><h2 className="dashboard-card-title text-lg sm:text-xl font-bold text-slate-900">Quick actions</h2><div className="mt-4 grid gap-4 sm:grid-cols-2 xl:grid-cols-4"><QuickAction to="/projects?new=true" icon={<Plus size={22} />} title="Submit new project" description="Start a restoration project submission" /><QuickAction to="/projects" icon={<FolderKanban size={22} />} title="View all projects" description="Manage your project records" /><QuickAction to="/verification" icon={<ClipboardCheck size={22} />} title="Verification status" description="Review verification outcomes" /><QuickAction to="/monitoring" icon={<Satellite size={22} />} title="View monitoring" description="Open satellite monitoring updates" />{isAdmin && <QuickAction to="/admin" icon={<ShieldCheck size={22} />} title="Admin control center" description="Review evidence and verification decisions" />}</div></section>
