@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { ArrowRight, Award, CalendarDays, CarFront, CheckCircle2, ClipboardCheck, FileWarning, FolderKanban, Leaf, Plus, RefreshCw, Satellite, ShieldCheck, Sparkles, Trees } from "lucide-react";
 import { projects as seedProjects } from "../data/mockData";
 import { getCurrentUser } from "../services/authService";
+import MapLibreMap from "../components/MapLibreMap";
 
 const KEYS = { projects: "blueguard_projects", evidence: "blueguard_evidence", verifications: "blueguard_verifications", carbonHistory: "blueguard_carbon_history" };
 

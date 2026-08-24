@@ -2,6 +2,9 @@ import { useState, useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
 import logoImg from "../assets/logo_transparent.png";
 import logoImgLight from "../assets/logo_transparent_light.png";
+import sundarbansImg from "../assets/sundarbans.jpg";
+import konkanImg from "../assets/konkan.jpg";
+import palkbayImg from "../assets/palkbay.jpg";
 
 // ── Logo (transparent mangrove marine emblem) ──
 // Dark mark for light backgrounds (project card badges), light mark for dark backgrounds (nav, hero, footer)
@@ -20,6 +23,13 @@ const IMGS = {
   marshland: "https://images.unsplash.com/photo-1760526664194-fc5745a576ec?w=900&h=700&fit=crop&auto=format",
   aerialOcean: "https://images.unsplash.com/photo-1743004144286-bc05445c7f1a?w=1200&h=800&fit=crop&auto=format",
 };
+
+// Shared nav/footer link list — was defined twice (Nav + Footer), now defined once.
+const NAV_LINKS = [
+  { label: "Features", href: "#features" },
+  { label: "How It Works", href: "#how-it-works" },
+  { label: "About", href: "#about" },
+];
 
 // ── Global styles (fonts, theme vars, keyframes, responsive rules) ──────────
 function GlobalStyles() {
@@ -223,13 +233,15 @@ function useCountUp(target, decimals, active, duration = 1400) {
 }
 
 // ── Reveal (minimal scroll-triggered fade-up, reuses useOnScreen) ────────────
-function Reveal({ children, delay = 0, style = {} }) {
+// Accepts an optional className so callers can layer their own layout classes
+// (e.g. "stat-col") on top of the fade-in behaviour instead of re-implementing it.
+function Reveal({ children, delay = 0, style = {}, className = "" }) {
   const ref = useRef(null);
   const visible = useOnScreen(ref, "-60px");
   return (
     <div
       ref={ref}
-      className="reveal-on-scroll"
+      className={`reveal-on-scroll ${className}`.trim()}
       style={{
         opacity: visible ? 1 : 0,
         transform: visible ? "translateY(0)" : "translateY(16px)",
@@ -242,14 +254,65 @@ function Reveal({ children, delay = 0, style = {} }) {
   );
 }
 
+// ── Hoverable ─────────────────────────────────────────────────────────────────
+// Replaces the ~12 repeated onMouseEnter/onMouseLeave blocks that were manually
+// mutating e.currentTarget.style throughout the file (nav links, hero CTAs,
+// project cards, image zooms, footer CTAs, etc). One component, one place to
+// change how hover transitions behave; `as` picks the rendered tag/component
+// (Link, "a", "div", "img", ...).
+function Hoverable({ as: Tag = "div", style, hoverStyle, children, onMouseEnter, onMouseLeave, ...rest }) {
+  const [hover, setHover] = useState(false);
+  return (
+    <Tag
+      {...rest}
+      style={{ ...style, ...(hover ? hoverStyle : null) }}
+      onMouseEnter={e => { setHover(true); onMouseEnter?.(e); }}
+      onMouseLeave={e => { setHover(false); onMouseLeave?.(e); }}
+    >
+      {children}
+    </Tag>
+  );
+}
+
+// ── Eyebrow ───────────────────────────────────────────────────────────────────
+// The small uppercase mono label ("Process", "About BlueGuard", "Field to chain"...)
+// was hand-written with the same style object in 6+ places. Centralised here;
+// callers only override color/size/margin where a section needs to.
+function Eyebrow({ children, color = "#1C7A78", style }) {
+  return (
+    <p style={{ fontFamily: "var(--font-mono)", fontSize: "0.68rem", letterSpacing: "0.14em", textTransform: "uppercase", color, marginBottom: 14, ...style }}>
+      {children}
+    </p>
+  );
+}
+
+// ── AnimatedNumber ────────────────────────────────────────────────────────────
+// One shared "trigger frame" for every counting number on the page. Parses
+// strings like "2.4M", "94", "12,480", watches its own scroll position, and
+// animates from 0 the moment it enters view. Used by the stats banner, the
+// project-card carbon totals, and the "Latest verification" figure so the
+// parsing + count-up math isn't rewritten at each call site.
+function AnimatedNumber({ value, duration = 1400, rootMargin = "-60px", style }) {
+  const ref = useRef(null);
+  const visible = useOnScreen(ref, rootMargin);
+  const hasComma = value.includes(",");
+  const cleaned = value.replace(/,/g, "");
+  const match = cleaned.match(/^([\d.]+)([A-Za-z]*)$/);
+  const numeric = match ? parseFloat(match[1]) : 0;
+  const suffix = match ? match[2] : "";
+  const decimals = match && match[1].includes(".") ? 1 : 0;
+  const raw = useCountUp(numeric, decimals, visible, duration);
+  const formatted = hasComma ? Number(raw).toLocaleString() : raw;
+  return (
+    <span ref={ref} style={style}>
+      {formatted}{suffix}
+    </span>
+  );
+}
+
 // ── Nav ───────────────────────────────────────────────────────────────────────
 function Nav() {
   const [open, setOpen] = useState(false);
-  const links = [
-    { label: "Features", href: "#features" },
-    { label: "How It Works", href: "#how-it-works" },
-    { label: "About", href: "#about" },
-  ];
   return (
     <header style={{ background: "rgba(7,28,33,0.97)", backdropFilter: "blur(12px)", borderBottom: "1px solid rgba(255,255,255,0.07)", position: "sticky", top: 0, zIndex: 50 }}>
       <div style={{ maxWidth: 1280, margin: "0 auto", padding: "0 24px", height: 64, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
@@ -259,18 +322,28 @@ function Nav() {
         </Link>
 
         <nav style={{ display: "flex", gap: 32, alignItems: "center" }} className="nav-desktop">
-          {links.map(l => (
+          {NAV_LINKS.map(l => (
             <a key={l.label} href={l.href} className="nav-link">{l.label}</a>
           ))}
         </nav>
 
         <div style={{ display: "flex", gap: 12, alignItems: "center" }} className="nav-desktop">
-          <Link to="/login" style={{ color: "#7AAAB1", fontSize: "0.875rem", fontWeight: 500, textDecoration: "none", transition: "color 0.2s" }}
-            onMouseEnter={e => (e.currentTarget.style.color = "#F7F8F4")}
-            onMouseLeave={e => (e.currentTarget.style.color = "#7AAAB1")}>Login</Link>
-          <Link to="/login" style={{ background: "#1C7A78", color: "#fff", borderRadius: 8, padding: "8px 18px", fontSize: "0.875rem", fontWeight: 600, textDecoration: "none", transition: "background 0.2s, box-shadow 0.2s", boxShadow: "0 2px 12px rgba(28,122,120,0.35)" }}
-            onMouseEnter={e => { e.currentTarget.style.background = "#12545A"; }}
-            onMouseLeave={e => { e.currentTarget.style.background = "#1C7A78"; }}>Get Started</Link>
+          <Hoverable
+            as={Link}
+            to="/login"
+            style={{ color: "#7AAAB1", fontSize: "0.875rem", fontWeight: 500, textDecoration: "none", transition: "color 0.2s" }}
+            hoverStyle={{ color: "#F7F8F4" }}
+          >
+            Login
+          </Hoverable>
+          <Hoverable
+            as={Link}
+            to="/login"
+            style={{ background: "#1C7A78", color: "#fff", borderRadius: 8, padding: "8px 18px", fontSize: "0.875rem", fontWeight: 600, textDecoration: "none", transition: "background 0.2s, box-shadow 0.2s", boxShadow: "0 2px 12px rgba(28,122,120,0.35)" }}
+            hoverStyle={{ background: "#12545A" }}
+          >
+            Get Started
+          </Hoverable>
         </div>
 
         <button className="nav-mobile-btn hidden" onClick={() => setOpen(!open)} style={{ background: "none", border: "none", cursor: "pointer", padding: 4, color: "#F7F8F4", display: "none" }}>
@@ -278,7 +351,7 @@ function Nav() {
         </button>
       </div>
       <div className={`mobile-menu ${open ? "open" : ""}`}>
-        {links.map(l => (
+        {NAV_LINKS.map(l => (
           <a key={l.label} href={l.href} onClick={() => setOpen(false)} style={{ color: "#9BB5BA", padding: "10px 0", fontSize: "0.9rem", fontWeight: 500, textDecoration: "none", borderBottom: "1px solid rgba(255,255,255,0.06)" }}>{l.label}</a>
         ))}
         <div style={{ display: "flex", gap: 12, paddingTop: 12 }}>
@@ -356,16 +429,22 @@ function Hero() {
 
           {/* CTAs */}
           <div style={{ display: "flex", justifyContent: "center", gap: 16, flexWrap: "wrap" }}>
-            <Link to="/login" style={{ background: "linear-gradient(135deg, #1C7A78 0%, #12545A 100%)", color: "#fff", borderRadius: 12, padding: "14px 32px", fontWeight: 600, fontSize: "0.98rem", textDecoration: "none", boxShadow: "0 6px 28px rgba(28,122,120,0.55), inset 0 1px 1px rgba(255,255,255,0.2)", transition: "all 0.25s ease" }}
-              onMouseEnter={e => { e.currentTarget.style.transform = "translateY(-2px)"; e.currentTarget.style.boxShadow = "0 8px 34px rgba(28,122,120,0.7), inset 0 1px 1px rgba(255,255,255,0.3)"; }}
-              onMouseLeave={e => { e.currentTarget.style.transform = "none"; e.currentTarget.style.boxShadow = "0 6px 28px rgba(28,122,120,0.55), inset 0 1px 1px rgba(255,255,255,0.2)"; }}>
+            <Hoverable
+              as={Link}
+              to="/login"
+              style={{ background: "linear-gradient(135deg, #1C7A78 0%, #12545A 100%)", color: "#fff", borderRadius: 12, padding: "14px 32px", fontWeight: 600, fontSize: "0.98rem", textDecoration: "none", boxShadow: "0 6px 28px rgba(28,122,120,0.55), inset 0 1px 1px rgba(255,255,255,0.2)", transition: "all 0.25s ease" }}
+              hoverStyle={{ transform: "translateY(-2px)", boxShadow: "0 8px 34px rgba(28,122,120,0.7), inset 0 1px 1px rgba(255,255,255,0.3)" }}
+            >
               Register a Project
-            </Link>
-            <Link to="/login" style={{ background: "rgba(255,255,255,0.08)", color: "#DCE8E9", border: "1px solid rgba(255,255,255,0.22)", borderRadius: 12, padding: "14px 32px", fontWeight: 500, fontSize: "0.98rem", textDecoration: "none", transition: "all 0.25s ease" }}
-              onMouseEnter={e => { e.currentTarget.style.background = "rgba(255,255,255,0.15)"; e.currentTarget.style.transform = "translateY(-2px)"; }}
-              onMouseLeave={e => { e.currentTarget.style.background = "rgba(255,255,255,0.08)"; e.currentTarget.style.transform = "none"; }}>
+            </Hoverable>
+            <Hoverable
+              as={Link}
+              to="/login"
+              style={{ background: "rgba(255,255,255,0.08)", color: "#DCE8E9", border: "1px solid rgba(255,255,255,0.22)", borderRadius: 12, padding: "14px 32px", fontWeight: 500, fontSize: "0.98rem", textDecoration: "none", transition: "all 0.25s ease" }}
+              hoverStyle={{ background: "rgba(255,255,255,0.15)", transform: "translateY(-2px)" }}
+            >
               Explore the Platform
-            </Link>
+            </Hoverable>
           </div>
         </div>
 
@@ -382,7 +461,7 @@ function Hero() {
         {/* Divider */}
         <div style={{ borderTop: "1px solid rgba(255,255,255,0.1)", marginBottom: 36 }} />
 
-        <p style={{ fontFamily: "var(--font-mono)", fontSize: "0.65rem", letterSpacing: "0.14em", textTransform: "uppercase", color: "#8FB4BB", marginBottom: 24 }}>Built for</p>
+        <Eyebrow color="#8FB4BB" style={{ fontSize: "0.65rem", marginBottom: 24, textAlign: "center" }}>Built for</Eyebrow>
         <div className="hero-users" style={{ display: "flex", justifyContent: "center", gap: 40, flexWrap: "wrap" }}>
           {users.map(u => (
             <div key={u.label} style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 10 }}>
@@ -417,9 +496,13 @@ function PhotoBand() {
       <div className="photo-band-grid">
         {photos.map((p, i) => (
           <div key={p.src} style={{ position: "relative", overflow: "hidden", background: "#071C21" }}>
-            <img src={p.src} alt={p.alt} style={{ width: "100%", height: "100%", objectFit: "cover", transition: "transform 0.6s ease", display: "block" }}
-              onMouseEnter={e => (e.currentTarget.style.transform = "scale(1.06)")}
-              onMouseLeave={e => (e.currentTarget.style.transform = "scale(1)")} />
+            <Hoverable
+              as="img"
+              src={p.src}
+              alt={p.alt}
+              style={{ width: "100%", height: "100%", objectFit: "cover", transition: "transform 0.6s ease", display: "block" }}
+              hoverStyle={{ transform: "scale(1.06)" }}
+            />
             <div style={{ position: "absolute", inset: 0, background: "linear-gradient(0deg, rgba(7,28,33,0.78) 0%, transparent 60%)" }} />
             <span style={{ position: "absolute", bottom: 16, left: 16, fontFamily: "var(--font-mono)", fontSize: "0.68rem", fontWeight: 600, letterSpacing: "0.12em", textTransform: "uppercase", color: "#CFE1E3" }}>{p.label}</span>
             <div style={{ position: "absolute", top: 14, right: 16, fontFamily: "var(--font-mono)", fontSize: "0.75rem", fontWeight: 600, color: "#5FBF8C", letterSpacing: "0.06em" }}>0{i + 1}</div>
@@ -431,37 +514,25 @@ function PhotoBand() {
 }
 
 // ── Stats Banner (aligned directly beneath the 4 pictures) ───────────────────
+// Each figure is a "trigger frame": Reveal handles the fade-up, AnimatedNumber
+// handles the scroll-triggered count — both shared components, no bespoke
+// per-card observer/parsing code like before.
 function StatCard({ stat }) {
-  const ref = useRef(null);
-  const visible = useOnScreen(ref, "-60px");
-  const match = stat.value.match(/^([\d.]+)([A-Za-z]*)$/);
-  const numeric = match ? parseFloat(match[1]) : 0;
-  const suffixLetter = match ? match[2] : "";
-  const decimals = match && match[1].includes(".") ? 1 : 0;
-  const displayNum = useCountUp(numeric, decimals, visible);
-
   return (
-    <div
-      ref={ref}
-      className="stat-col"
-      style={{
-        opacity: visible ? 1 : 0,
-        transform: visible ? "translateY(0)" : "translateY(16px)",
-        transition: "opacity 0.6s ease, transform 0.6s ease",
-      }}
-    >
+    <Reveal className="stat-col">
       <div style={{ display: "flex", alignItems: "baseline", justifyContent: "center", gap: 6 }}>
-        <span style={{
-          fontFamily: "var(--font-serif)",
-          fontWeight: 700,
-          fontSize: "clamp(2.5rem, 4vw, 3.6rem)",
-          color: "#0B2B33",
-          letterSpacing: "-0.03em",
-          lineHeight: 1,
-          fontVariantNumeric: "tabular-nums"
-        }}>
-          {displayNum}{suffixLetter}
-        </span>
+        <AnimatedNumber
+          value={stat.value}
+          style={{
+            fontFamily: "var(--font-serif)",
+            fontWeight: 700,
+            fontSize: "clamp(2.5rem, 4vw, 3.6rem)",
+            color: "#0B2B33",
+            letterSpacing: "-0.03em",
+            lineHeight: 1,
+            fontVariantNumeric: "tabular-nums",
+          }}
+        />
         <span style={{
           fontFamily: "var(--font-sans)",
           fontSize: "clamp(0.95rem, 1.2vw, 1.15rem)",
@@ -484,7 +555,7 @@ function StatCard({ stat }) {
       }}>
         {stat.label}
       </p>
-    </div>
+    </Reveal>
   );
 }
 
@@ -504,34 +575,34 @@ function StatsBanner() {
   );
 }
 
-// ── Current Projects ──────────────────────────────────────────────────────────
+// ── Current Projects (your updated restoration photos) ───────────────────────
 const PROJECTS = [
   {
     type: "Mangrove Restoration",
     verified: true,
-    img: "https://images.unsplash.com/photo-1774960693005-e6a8aafc3397?w=900&h=420&fit=crop&auto=format",
-    location: "Maharashtra, India",
-    name: "Mangrove Guardians",
+    img: sundarbansImg,
+    location: "West Bengal, India",
+    name: "Sundarban Mangrove Revival",
     progress: 82,
-    carbon: "12,480",
+    carbon: "18,450",
   },
   {
     type: "Mangrove Restoration",
     verified: true,
-    img: "https://images.unsplash.com/photo-1767917921018-3f998847486f?w=900&h=420&fit=crop&auto=format",
-    location: "Gujarat, India",
-    name: "Blue Coast Revival",
-    progress: 68,
-    carbon: "8,920",
+    img: konkanImg,
+    location: "Maharashtra, India",
+    name: "Konkan Blue Belt",
+    progress: 61,
+    carbon: "9,820",
   },
   {
     type: "Seagrass Restoration",
     verified: true,
-    img: "https://images.unsplash.com/photo-1629215833206-ba050a68cd65?w=900&h=420&fit=crop&auto=format",
+    img: palkbayImg,
     location: "Tamil Nadu, India",
-    name: "Seagrass Revival Initiative",
-    progress: 74,
-    carbon: "6,340",
+    name: "Palk Bay Seagrass Recovery",
+    progress: 47,
+    carbon: "12,100",
   },
 ];
 
@@ -542,7 +613,7 @@ function Features() {
         {/* Header */}
         <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", flexWrap: "wrap", gap: 16, marginBottom: 52 }}>
           <div>
-            <p style={{ fontFamily: "var(--font-mono)", fontSize: "0.68rem", letterSpacing: "0.14em", textTransform: "uppercase", color: "#1C7A78", marginBottom: 10 }}>On-chain registry</p>
+            <Eyebrow>On-chain registry</Eyebrow>
             <h2 style={{ fontFamily: "var(--font-serif)", fontWeight: 700, fontSize: "clamp(1.9rem, 4vw, 2.75rem)", color: "#0B2B33", letterSpacing: "-0.02em", lineHeight: 1.15, margin: "0 0 10px" }}>
               Restoration you can<br /><span style={{ color: "#1C7A78" }}>actually see.</span>
             </h2>
@@ -556,74 +627,82 @@ function Features() {
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(300px, 1fr))", gap: 24 }}>
           {PROJECTS.map((p, i) => (
             <Reveal key={p.name} delay={i * 100}>
-            <div
-              style={{ background: "#fff", border: "1px solid #E7DEC7", borderRadius: 16, overflow: "hidden", transition: "box-shadow 0.25s, transform 0.25s", cursor: "default" }}
-              onMouseEnter={e => { e.currentTarget.style.boxShadow = "0 12px 40px rgba(11,43,51,0.13)"; e.currentTarget.style.transform = "translateY(-4px)"; }}
-              onMouseLeave={e => { e.currentTarget.style.boxShadow = "none"; e.currentTarget.style.transform = "none"; }}>
-              {/* Photo */}
-              <div style={{ position: "relative", height: 200, overflow: "hidden", background: "#0B2B33" }}>
-                <img src={p.img} alt={p.name} style={{ width: "100%", height: "100%", objectFit: "cover", display: "block", transition: "transform 0.5s ease" }}
-                  onMouseEnter={e => (e.currentTarget.style.transform = "scale(1.05)")}
-                  onMouseLeave={e => (e.currentTarget.style.transform = "scale(1)")} />
-                {/* Tags row */}
-                <div style={{ position: "absolute", top: 12, left: 12, right: 12, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                  <span style={{ display: "inline-flex", alignItems: "center", gap: 5, background: "rgba(255,255,255,0.92)", backdropFilter: "blur(6px)", borderRadius: 100, padding: "4px 11px", fontSize: "0.68rem", fontWeight: 600, color: "#0B2B33", letterSpacing: "0.06em", textTransform: "uppercase" }}>
-                    <img src={LOGO_SRC} alt="" style={{ width: 11, height: 11, objectFit: "contain" }} />
-                    {p.type}
-                  </span>
-                  {p.verified && (
-                    <span style={{ display: "inline-flex", alignItems: "center", gap: 4, background: "#1C7A78", borderRadius: 100, padding: "4px 11px", fontSize: "0.68rem", fontWeight: 600, color: "#fff", letterSpacing: "0.04em" }}>
-                      <CheckIcon color="#fff" size={11} />
-                      Verified
+              <Hoverable
+                as="div"
+                style={{ background: "#fff", border: "1px solid #E7DEC7", borderRadius: 16, overflow: "hidden", transition: "box-shadow 0.25s, transform 0.25s", cursor: "default" }}
+                hoverStyle={{ boxShadow: "0 12px 40px rgba(11,43,51,0.13)", transform: "translateY(-4px)" }}
+              >
+                {/* Photo */}
+                <div style={{ position: "relative", height: 200, overflow: "hidden", background: "#0B2B33" }}>
+                  <Hoverable
+                    as="img"
+                    src={p.img}
+                    alt={p.name}
+                    style={{ width: "100%", height: "100%", objectFit: "cover", display: "block", transition: "transform 0.5s ease" }}
+                    hoverStyle={{ transform: "scale(1.05)" }}
+                  />
+                  {/* Tags row */}
+                  <div style={{ position: "absolute", top: 12, left: 12, right: 12, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                    <span style={{ display: "inline-flex", alignItems: "center", gap: 5, background: "rgba(255,255,255,0.92)", backdropFilter: "blur(6px)", borderRadius: 100, padding: "4px 11px", fontSize: "0.68rem", fontWeight: 600, color: "#0B2B33", letterSpacing: "0.06em", textTransform: "uppercase" }}>
+                      <img src={LOGO_SRC} alt="" style={{ width: 11, height: 11, objectFit: "contain" }} />
+                      {p.type}
                     </span>
-                  )}
-                </div>
-              </div>
-
-              {/* Card body */}
-              <div style={{ padding: "22px 22px 24px" }}>
-                {/* Location */}
-                <div style={{ display: "flex", alignItems: "center", gap: 5, marginBottom: 6 }}>
-                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#6A9099" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" /><circle cx="12" cy="10" r="3" />
-                  </svg>
-                  <span style={{ fontSize: "0.78rem", color: "#6A9099", fontWeight: 500 }}>{p.location}</span>
-                </div>
-
-                {/* Name */}
-                <h3 style={{ fontFamily: "var(--font-serif)", fontWeight: 700, fontSize: "1.25rem", color: "#0B2B33", letterSpacing: "-0.01em", margin: "0 0 18px" }}>{p.name}</h3>
-
-                {/* Progress */}
-                <div style={{ marginBottom: 16 }}>
-                  <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 6 }}>
-                    <span style={{ fontSize: "0.78rem", color: "#6A9099", fontWeight: 500 }}>Restoration progress</span>
-                    <span style={{ fontSize: "0.78rem", color: "#0B2B33", fontWeight: 700 }}>{p.progress}%</span>
-                  </div>
-                  <div style={{ height: 6, background: "#E7DEC7", borderRadius: 100, overflow: "hidden" }}>
-                    <div style={{ height: "100%", width: `${p.progress}%`, background: "linear-gradient(90deg, #1C7A78, #3F7D5C)", borderRadius: 100, transition: "width 0.6s ease" }} />
+                    {p.verified && (
+                      <span style={{ display: "inline-flex", alignItems: "center", gap: 4, background: "#1C7A78", borderRadius: 100, padding: "4px 11px", fontSize: "0.68rem", fontWeight: 600, color: "#fff", letterSpacing: "0.04em" }}>
+                        <CheckIcon color="#fff" size={11} />
+                        Verified
+                      </span>
+                    )}
                   </div>
                 </div>
 
-                {/* Carbon impact */}
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                  <span style={{ fontSize: "0.8rem", color: "#6A9099" }}>Estimated carbon impact</span>
-                  <span style={{ fontFamily: "var(--font-mono)", fontSize: "0.92rem", fontWeight: 600, color: "#C46A3F" }}>
-                    {p.carbon} <span style={{ fontSize: "0.72rem" }}>tCO₂e</span>
-                  </span>
+                {/* Card body */}
+                <div style={{ padding: "22px 22px 24px" }}>
+                  {/* Location */}
+                  <div style={{ display: "flex", alignItems: "center", gap: 5, marginBottom: 6 }}>
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#6A9099" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" /><circle cx="12" cy="10" r="3" />
+                    </svg>
+                    <span style={{ fontSize: "0.78rem", color: "#6A9099", fontWeight: 500 }}>{p.location}</span>
+                  </div>
+
+                  {/* Name */}
+                  <h3 style={{ fontFamily: "var(--font-serif)", fontWeight: 700, fontSize: "1.25rem", color: "#0B2B33", letterSpacing: "-0.01em", margin: "0 0 18px" }}>{p.name}</h3>
+
+                  {/* Progress */}
+                  <div style={{ marginBottom: 16 }}>
+                    <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 6 }}>
+                      <span style={{ fontSize: "0.78rem", color: "#6A9099", fontWeight: 500 }}>Restoration progress</span>
+                      <span style={{ fontSize: "0.78rem", color: "#0B2B33", fontWeight: 700 }}>{p.progress}%</span>
+                    </div>
+                    <div style={{ height: 6, background: "#E7DEC7", borderRadius: 100, overflow: "hidden" }}>
+                      <div style={{ height: "100%", width: `${p.progress}%`, background: "linear-gradient(90deg, #1C7A78, #3F7D5C)", borderRadius: 100, transition: "width 0.6s ease" }} />
+                    </div>
+                  </div>
+
+                  {/* Carbon impact — same AnimatedNumber trigger used in the stats banner */}
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                    <span style={{ fontSize: "0.8rem", color: "#6A9099" }}>Estimated carbon impact</span>
+                    <span style={{ fontFamily: "var(--font-mono)", fontSize: "0.92rem", fontWeight: 600, color: "#C46A3F" }}>
+                      <AnimatedNumber value={p.carbon} rootMargin="-30px" /> <span style={{ fontSize: "0.72rem" }}>tCO₂e</span>
+                    </span>
+                  </div>
                 </div>
-              </div>
-            </div>
+              </Hoverable>
             </Reveal>
           ))}
         </div>
 
         {/* View all */}
         <div style={{ textAlign: "center", marginTop: 44 }}>
-          <Link to="/login" style={{ display: "inline-flex", alignItems: "center", gap: 8, border: "1px solid #0B2B33", borderRadius: 100, padding: "13px 32px", fontSize: "0.9rem", fontWeight: 600, color: "#0B2B33", textDecoration: "none", transition: "background 0.2s, color 0.2s" }}
-            onMouseEnter={e => { e.currentTarget.style.background = "#0B2B33"; e.currentTarget.style.color = "#fff"; }}
-            onMouseLeave={e => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = "#0B2B33"; }}>
+          <Hoverable
+            as={Link}
+            to="/login"
+            style={{ display: "inline-flex", alignItems: "center", gap: 8, border: "1px solid #0B2B33", borderRadius: 100, padding: "13px 32px", fontSize: "0.9rem", fontWeight: 600, color: "#0B2B33", textDecoration: "none", transition: "background 0.2s, color 0.2s" }}
+            hoverStyle={{ background: "#0B2B33", color: "#fff" }}
+          >
             View All Projects →
-          </Link>
+          </Hoverable>
         </div>
       </div>
     </section>
@@ -643,7 +722,7 @@ function Workflow() {
     <section id="how-it-works" style={{ background: "#0B2B33", padding: "104px 24px" }}>
       <div style={{ maxWidth: 1280, margin: "0 auto" }}>
         <div style={{ textAlign: "center", maxWidth: 620, margin: "0 auto 68px" }}>
-          <p style={{ fontFamily: "var(--font-mono)", fontSize: "0.68rem", letterSpacing: "0.14em", textTransform: "uppercase", color: "#5FBF8C", marginBottom: 14 }}>Process</p>
+          <Eyebrow color="#5FBF8C" style={{ textAlign: "center" }}>Process</Eyebrow>
           <h2 style={{ fontFamily: "var(--font-serif)", fontWeight: 700, fontSize: "clamp(1.9rem, 4vw, 2.75rem)", color: "#F7F8F4", letterSpacing: "-0.02em", lineHeight: 1.2, margin: "0 0 14px" }}>
             How a claim becomes<br />a verified credit.
           </h2>
@@ -656,13 +735,13 @@ function Workflow() {
           <div className="workflow-line" />
           {steps.map((s, i) => (
             <Reveal key={s.n} delay={i * 90} style={{ flex: 1, minWidth: 150 }}>
-            <div className="flow-step">
-              <div className="step-num">{s.n}</div>
-              <div>
-                <h3 style={{ fontFamily: "var(--font-serif)", fontWeight: 700, fontSize: "1.05rem", color: "#F7F8F4", margin: "0 0 8px", letterSpacing: "-0.01em" }}>{s.title}</h3>
-                <p style={{ fontSize: "0.85rem", color: "#8FB4BB", lineHeight: 1.65, margin: 0, maxWidth: 220 }}>{s.desc}</p>
+              <div className="flow-step">
+                <div className="step-num">{s.n}</div>
+                <div>
+                  <h3 style={{ fontFamily: "var(--font-serif)", fontWeight: 700, fontSize: "1.05rem", color: "#F7F8F4", margin: "0 0 8px", letterSpacing: "-0.01em" }}>{s.title}</h3>
+                  <p style={{ fontSize: "0.85rem", color: "#8FB4BB", lineHeight: 1.65, margin: 0, maxWidth: 220 }}>{s.desc}</p>
+                </div>
               </div>
-            </div>
             </Reveal>
           ))}
         </div>
@@ -683,7 +762,7 @@ function About() {
     <section id="about" style={{ background: "#F7F8F4", padding: "104px 0" }}>
       <div className="about-grid" style={{ maxWidth: 1280, margin: "0 auto", padding: "0 24px", display: "grid", gridTemplateColumns: "1.05fr 0.95fr", gap: 64, alignItems: "center" }}>
         <div>
-          <p style={{ fontFamily: "var(--font-mono)", fontSize: "0.68rem", letterSpacing: "0.14em", textTransform: "uppercase", color: "#1C7A78", marginBottom: 14 }}>About BlueGuard</p>
+          <Eyebrow>About BlueGuard</Eyebrow>
           <h2 style={{ fontFamily: "var(--font-serif)", fontWeight: 700, fontSize: "clamp(1.9rem, 4vw, 2.6rem)", color: "#0B2B33", letterSpacing: "-0.02em", lineHeight: 1.2, margin: "0 0 20px" }}>
             Built because blue carbon claims were too easy to fake.
           </h2>
@@ -713,7 +792,7 @@ function About() {
           <img src={IMGS.mangroveBlue} alt="Lush mangrove forest meeting turquoise water from above" style={{ width: "100%", height: "100%", objectFit: "cover", position: "absolute", inset: 0 }} />
           <div style={{ position: "absolute", inset: 0, background: "linear-gradient(0deg, rgba(7,28,33,0.75) 0%, transparent 45%)" }} />
           <div style={{ position: "absolute", bottom: 28, left: 28, right: 28, background: "rgba(7,28,33,0.82)", backdropFilter: "blur(8px)", border: "1px solid rgba(95,191,140,0.25)", borderRadius: 14, padding: "18px 22px" }}>
-            <div style={{ fontFamily: "var(--font-mono)", fontSize: "0.6rem", letterSpacing: "0.12em", textTransform: "uppercase", color: "#5FBF8C", marginBottom: 6 }}>Since day one</div>
+            <Eyebrow color="#5FBF8C" style={{ fontSize: "0.6rem", marginBottom: 6 }}>Since day one</Eyebrow>
             <p style={{ fontFamily: "var(--font-serif)", fontSize: "1.05rem", color: "#F7F8F4", margin: 0, lineHeight: 1.5 }}>
               Field-verified before it was on-chain, now the two happen together.
             </p>
@@ -732,16 +811,18 @@ function ImmersiveSplit() {
       <div style={{ position: "relative", background: "#071C21", overflow: "hidden", minHeight: 340 }}>
         <img src={IMGS.aerialOcean} alt="Aerial view of lush mangrove forest meeting ocean" style={{ width: "100%", height: "100%", objectFit: "cover", opacity: 0.75 }} />
         <div style={{ position: "absolute", inset: 0, background: "linear-gradient(90deg, transparent 60%, rgba(11,43,51,0.6) 100%)" }} />
-        {/* Overlaid stat */}
-        <div style={{ position: "absolute", bottom: 32, left: 32, background: "rgba(7,28,33,0.85)", backdropFilter: "blur(8px)", border: "1px solid rgba(28,122,120,0.3)", borderRadius: 12, padding: "16px 22px" }}>
-          <div style={{ fontFamily: "var(--font-mono)", fontSize: "0.6rem", letterSpacing: "0.12em", textTransform: "uppercase", color: "#3F7D5C", marginBottom: 4 }}>Latest verification</div>
-          <div style={{ fontFamily: "var(--font-serif)", fontSize: "1.5rem", fontWeight: 700, color: "#F7F8F4", letterSpacing: "-0.02em" }}>12,480 tCO₂e</div>
+        {/* Overlaid stat — fades in and counts up (AnimatedNumber) the moment it's on screen */}
+        <Reveal style={{ position: "absolute", bottom: 32, left: 32, background: "rgba(7,28,33,0.85)", backdropFilter: "blur(8px)", border: "1px solid rgba(28,122,120,0.3)", borderRadius: 12, padding: "16px 22px" }}>
+          <Eyebrow color="#3F7D5C" style={{ fontSize: "0.6rem", marginBottom: 4 }}>Latest verification</Eyebrow>
+          <div style={{ fontFamily: "var(--font-serif)", fontSize: "1.5rem", fontWeight: 700, color: "#F7F8F4", letterSpacing: "-0.02em" }}>
+            <AnimatedNumber value="12,480" rootMargin="-40px" /> tCO₂e
+          </div>
           <div style={{ fontFamily: "var(--font-mono)", fontSize: "0.65rem", color: "#4A7A82", marginTop: 2 }}>Mekong Delta · Block #18,432,917</div>
-        </div>
+        </Reveal>
       </div>
       {/* Text half */}
       <div style={{ background: "#0B2B33", display: "flex", flexDirection: "column", justifyContent: "center", padding: "64px 56px" }}>
-        <p style={{ fontFamily: "var(--font-mono)", fontSize: "0.68rem", letterSpacing: "0.14em", textTransform: "uppercase", color: "#3F7D5C", marginBottom: 16 }}>Field to chain</p>
+        <Eyebrow color="#3F7D5C">Field to chain</Eyebrow>
         <h2 style={{ fontFamily: "var(--font-serif)", fontWeight: 700, fontSize: "clamp(1.7rem, 3vw, 2.5rem)", color: "#F7F8F4", letterSpacing: "-0.02em", lineHeight: 1.2, marginBottom: 20 }}>
           Every mangrove counted.<br />Every claim verified.
         </h2>
@@ -767,7 +848,7 @@ function ImmersiveSplit() {
 function CTABand() {
   return (
     <section style={{ background: "#1C7A78", padding: "64px 24px", textAlign: "center" }}>
-      <p style={{ fontFamily: "var(--font-mono)", fontSize: "0.68rem", letterSpacing: "0.14em", textTransform: "uppercase", color: "rgba(255,255,255,0.55)", marginBottom: 14 }}>Ready to get started?</p>
+      <Eyebrow color="rgba(255,255,255,0.55)" style={{ textAlign: "center" }}>Ready to get started?</Eyebrow>
       <h2 style={{ fontFamily: "var(--font-serif)", fontWeight: 700, fontSize: "clamp(1.7rem, 4vw, 2.6rem)", color: "#fff", letterSpacing: "-0.02em", margin: "0 0 18px", lineHeight: 1.2 }}>
         Register your first blue carbon site today.
       </h2>
@@ -775,16 +856,22 @@ function CTABand() {
         Join field teams, regulators, and investors already using BlueGuard to verify and trust blue carbon claims.
       </p>
       <div style={{ display: "flex", justifyContent: "center", gap: 14, flexWrap: "wrap" }}>
-        <Link to="/login" style={{ background: "#fff", color: "#12545A", borderRadius: 10, padding: "13px 28px", fontWeight: 700, fontSize: "0.95rem", textDecoration: "none", boxShadow: "0 4px 20px rgba(0,0,0,0.18)", transition: "transform 0.2s" }}
-          onMouseEnter={e => (e.currentTarget.style.transform = "translateY(-2px)")}
-          onMouseLeave={e => (e.currentTarget.style.transform = "none")}>
+        <Hoverable
+          as={Link}
+          to="/login"
+          style={{ background: "#fff", color: "#12545A", borderRadius: 10, padding: "13px 28px", fontWeight: 700, fontSize: "0.95rem", textDecoration: "none", boxShadow: "0 4px 20px rgba(0,0,0,0.18)", transition: "transform 0.2s" }}
+          hoverStyle={{ transform: "translateY(-2px)" }}
+        >
           Create Account →
-        </Link>
-        <Link to="/login" style={{ background: "rgba(0,0,0,0.15)", color: "#fff", border: "1px solid rgba(255,255,255,0.25)", borderRadius: 10, padding: "13px 28px", fontWeight: 500, fontSize: "0.95rem", textDecoration: "none", transition: "background 0.2s" }}
-          onMouseEnter={e => (e.currentTarget.style.background = "rgba(0,0,0,0.25)")}
-          onMouseLeave={e => (e.currentTarget.style.background = "rgba(0,0,0,0.15)")}>
+        </Hoverable>
+        <Hoverable
+          as={Link}
+          to="/login"
+          style={{ background: "rgba(0,0,0,0.15)", color: "#fff", border: "1px solid rgba(255,255,255,0.25)", borderRadius: 10, padding: "13px 28px", fontWeight: 500, fontSize: "0.95rem", textDecoration: "none", transition: "background 0.2s" }}
+          hoverStyle={{ background: "rgba(0,0,0,0.25)" }}
+        >
           Sign In / Request Demo →
-        </Link>
+        </Hoverable>
       </div>
     </section>
   );
@@ -792,11 +879,6 @@ function CTABand() {
 
 // ── Footer ────────────────────────────────────────────────────────────────────
 function Footer() {
-  const links = [
-    { label: "Features", href: "#features" },
-    { label: "How It Works", href: "#how-it-works" },
-    { label: "About", href: "#about" },
-  ];
   return (
     <footer style={{ background: "#0B2B33", borderTop: "1px solid rgba(255,255,255,0.06)", padding: "48px 24px 32px" }}>
       <div style={{ maxWidth: 1280, margin: "0 auto", display: "flex", flexDirection: "column", alignItems: "center", gap: 18, textAlign: "center" }}>
@@ -805,7 +887,7 @@ function Footer() {
           <span style={{ fontFamily: "var(--font-serif)", fontWeight: 700, fontSize: "1.15rem", color: "#F7F8F4", letterSpacing: "-0.02em" }}>BlueGuard</span>
         </div>
         <div style={{ display: "flex", gap: 24, flexWrap: "wrap", justifyContent: "center" }}>
-          {links.map(l => <a key={l.label} href={l.href} className="nav-link">{l.label}</a>)}
+          {NAV_LINKS.map(l => <a key={l.label} href={l.href} className="nav-link">{l.label}</a>)}
         </div>
         <p style={{ fontFamily: "var(--font-mono)", fontSize: "0.68rem", letterSpacing: "0.1em", color: "#3A6570", textTransform: "uppercase" }}>Verify Before You Trust</p>
         <p style={{ fontSize: "0.8rem", color: "#2E5E6A", marginTop: 6 }}>© 2024 BlueGuard. Blockchain-Based Blue Carbon Registry & MRV System.</p>
