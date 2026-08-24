@@ -1,3 +1,4 @@
+import SatellitePassTimeline from "../components/SatellitePassTimeline";
 import { getScopedProjects } from "../services/scopeService";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useSearchParams, Link } from "react-router-dom";
@@ -797,6 +798,23 @@ export default function Monitoring() {
           </div>
         </div>
       </section>
+
+      {/* =========================================================
+          HISTORICAL SATELLITE IMAGE PROGRESSION TIMELINE
+          ========================================================= */}
+      <SatellitePassTimeline
+        project={project}
+        onSelectPass={(pass) => {
+          if (pass && pass.image) {
+            setSatelliteImageUrl(pass.image);
+            setSatelliteMetadata({
+              capturedAt: pass.date,
+              cloudCover: pass.cloudCover ? pass.cloudCover.replace("%", "") : "2.4",
+              source: pass.sensor,
+            });
+          }
+        }}
+      />
 
       {}
       <div className="mt-6 grid gap-6 xl:grid-cols-[minmax(0,1.85fr)_minmax(340px,0.85fr)]">
