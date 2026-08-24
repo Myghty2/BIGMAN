@@ -193,7 +193,7 @@ export default function Projects() {
     const orgEmail = (currentUser?.officialEmail || currentUser?.email || "").toLowerCase();
     const orgName = (currentUser?.organizationName || currentUser?.name || "").toLowerCase();
 
-    return scopedProjectsList.filter((p) => {
+    return projectsList.filter((p) => {
       if (p.organizationId && (p.organizationId === orgId || p.organizationId === currentUser?.uid)) return true;
       if (p.organizationEmail && p.organizationEmail.toLowerCase() === orgEmail) return true;
       if (p.organizationName && p.organizationName.toLowerCase() === orgName) return true;
