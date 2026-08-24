@@ -1,3 +1,4 @@
+import { exportProjectPdfReport } from "../utils/exportPdfReport";
 import { getScopedProjects } from "../services/scopeService";
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
