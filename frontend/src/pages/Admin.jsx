@@ -1,3 +1,9 @@
+import {
+  saveAuditLogToFirebase,
+  saveBlockchainCertificateToFirebase,
+  fetchAuditLogsFromFirebase,
+  fetchBlockchainCertificatesFromFirebase,
+} from "../services/blockchainService";
 import { useMemo, useState, useEffect } from "react";
 import greenWater from "../assets/greenWater.jpg";
 import {
@@ -76,6 +82,13 @@ export default function Admin() {
   const [loadingEvidence, setLoadingEvidence] = useState(false);
   const [previewImage, setPreviewImage] = useState(null);
   const [galleryFilter, setGalleryFilter] = useState("all");
+  const [auditLogsList, setAuditLogsList] = useState(() => {
+    try {
+      return JSON.parse(localStorage.getItem("blueguard_audit_log") || "[]");
+    } catch {
+      return [];
+    }
+  });
 
   const storedStatuses = getStored(STATUS_KEY, {});
   const auditLogs = getStored(AUDIT_KEY, []);
@@ -96,6 +109,7 @@ export default function Admin() {
 
   useEffect(() => {
     loadLiveEvidence();
+    fetchAuditLogsFromFirebase().then((logs) => setAuditLogsList(logs));
   }, [refresh]);
 
   const enrichedProjects = useMemo(() => {
@@ -240,6 +254,16 @@ export default function Admin() {
     });
 
     saveStored(AUDIT_KEY, currentAuditLog);
+    saveAuditLogToFirebase({
+      id: `AUD-${Date.now()}`,
+      projectId: selectedProject.id,
+      projectName: selectedProject.name,
+      decision,
+      remarks: remarks.trim() || (decision === "Approve" ? "Approved with full satellite and Supabase field verification." : ""),
+      timestamp,
+      verificationHash,
+      admin: "BlueGuard Admin (Lead MRV Auditor)",
+    });
 
     if (decision === "Approve") {
       const exists = currentVerifications.some(
@@ -262,6 +286,19 @@ export default function Admin() {
         });
 
         saveStored(VERIFICATION_KEY, currentVerifications);
+        saveBlockchainCertificateToFirebase({
+          id: `REC-${Date.now()}`,
+          projectId: selectedProject.id,
+          projectName: selectedProject.name,
+          location: selectedProject.location,
+          coordinates: selectedProject.coordinates,
+          carbonEstimate: selectedProject.carbonEstimate,
+          hectares: selectedProject.hectares,
+          verificationHash,
+          approvedAt: timestamp,
+          verifier: "BlueGuard Admin Console",
+          evidenceCount: projectEvidence.length || 3,
+        });
       }
     }
 
@@ -673,12 +710,12 @@ export default function Admin() {
           </div>
 
           <div className="mt-6 space-y-4">
-            {auditLogs.length === 0 ? (
+            {(auditLogsList.length || auditLogs.length) === 0 ? (
               <div className="rounded-2xl border border-dashed border-slate-200 p-12 text-center text-sm text-slate-500">
                 No administrative audit actions recorded yet.
               </div>
             ) : (
-              auditLogs.map((log) => (
+              (auditLogsList.length ? auditLogsList : auditLogs).map((log) => (
                 <div
                   key={log.id}
                   className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 rounded-2xl border border-slate-200 bg-slate-50/70 p-4 sm:p-5"

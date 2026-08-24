@@ -1,3 +1,4 @@
+import { fetchBlockchainCertificatesFromFirebase } from "../services/blockchainService";
 import { useState, useMemo } from "react";
 import greenWater from "../assets/greenWater.jpg";
 import {
@@ -38,8 +39,13 @@ export default function Blockchain() {
   const [search, setSearch] = useState("");
   const [copiedHash, setCopiedHash] = useState(null);
   const [selectedRecord, setSelectedRecord] = useState(null);
+  const [cloudCerts, setCloudCerts] = useState([]);
 
-  const verifications = getStored(VERIFICATION_KEY, []);
+  useEffect(() => {
+    fetchBlockchainCertificatesFromFirebase().then((certs) => setCloudCerts(certs));
+  }, []);
+
+  const verifications = cloudCerts.length > 0 ? cloudCerts : getStored(VERIFICATION_KEY, []);
   const allProjects = getStored(STORAGE_KEY, seedProjects);
 
   // Combine verification records with projects for complete blockchain certificate list
