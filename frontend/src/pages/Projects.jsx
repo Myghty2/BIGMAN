@@ -122,14 +122,33 @@ export default function Projects() {
     setProjectsList(loadProjects());
   };
 
+  const isAdmin = currentUser?.role === "admin" || Boolean(localStorage.getItem("blueguard_admin_session"));
+
+  // Multi-tenant Organization project filter: Organizations can ONLY see their own projects
+  const scopedProjectsList = useMemo(() => {
+    if (isAdmin) return projectsList;
+    if (!currentUser) return [];
+    const orgId = currentUser.id || currentUser.uid;
+    const orgEmail = (currentUser.officialEmail || currentUser.email || "").toLowerCase().trim();
+    const orgName = (currentUser.organizationName || currentUser.name || "").toLowerCase().trim();
+
+    return projectsList.filter((p) => {
+      if (p.organizationId && (p.organizationId === orgId || p.organizationId === currentUser.uid)) return true;
+      if (p.organizationEmail && orgEmail && p.organizationEmail.toLowerCase().trim() === orgEmail) return true;
+      if (p.organizationName && orgName && p.organizationName.toLowerCase().trim() === orgName) return true;
+      if (p.owner && (p.owner === orgId || p.owner === currentUser.uid)) return true;
+      return false;
+    });
+  }, [projectsList, currentUser, isAdmin]);
+
   // Currently inspected project
   const selectedProject = useMemo(() => {
     return (
-      projectsList.find((p) => p.id === selectedProjectId) ||
-      projectsList[0] ||
-      seedProjects[0]
+      scopedProjectsList.find((p) => p.id === selectedProjectId) ||
+      scopedProjectsList[0] ||
+      null
     );
-  }, [projectsList, selectedProjectId]);
+  }, [scopedProjectsList, selectedProjectId]);
 
   const evidenceList = useMemo(() => {
     return loadEvidence(selectedProject?.id);
@@ -157,18 +176,18 @@ export default function Projects() {
 
   // Metrics summary
   const summary = useMemo(() => {
-    const total = projectsList.length;
-    const verified = projectsList.filter((p) =>
+    const total = scopedProjectsList.length;
+    const verified = scopedProjectsList.filter((p) =>
       ["Verified", "Finished", "Approved"].includes(p.status)
     ).length;
-    const inProgress = projectsList.filter((p) =>
+    const inProgress = scopedProjectsList.filter((p) =>
       ["In Progress", "Under Review", "Active", "Monitoring"].includes(p.status)
     ).length;
-    const totalHectares = projectsList.reduce((acc, p) => {
+    const totalHectares = scopedProjectsList.reduce((acc, p) => {
       const h = Number(String(p.area || "").replace(/[^0-9.]/g, "")) || 0;
       return acc + h;
     }, 0);
-    const totalCarbon = projectsList.reduce((acc, p) => {
+    const totalCarbon = scopedProjectsList.reduce((acc, p) => {
       const c = Number(String(p.carbon || "").replace(/[^0-9.]/g, "")) || 0;
       return acc + c;
     }, 0);
@@ -180,33 +199,12 @@ export default function Projects() {
       totalHectares: totalHectares.toLocaleString(),
       totalCarbon: formatCarbonValue(totalCarbon),
     };
-  }, [projectsList]);
+  }, [scopedProjectsList]);
 
   // Filtered projects
-  
-  const isAdmin = currentUser?.role === "admin" || Boolean(localStorage.getItem("blueguard_admin_session"));
-
-  // Multi-tenant Organization project filter: Organizations can ONLY see their own projects
-  const scopedProjectsList = useMemo(() => {
-    if (isAdmin) return projectsList;
-    const orgId = currentUser?.id || currentUser?.uid;
-    const orgEmail = (currentUser?.officialEmail || currentUser?.email || "").toLowerCase();
-    const orgName = (currentUser?.organizationName || currentUser?.name || "").toLowerCase();
-
-    return projectsList.filter((p) => {
-      if (p.organizationId && (p.organizationId === orgId || p.organizationId === currentUser?.uid)) return true;
-      if (p.organizationEmail && p.organizationEmail.toLowerCase() === orgEmail) return true;
-      if (p.organizationName && p.organizationName.toLowerCase() === orgName) return true;
-      // Default demo NGO gets the unassigned seed projects
-      if ((orgId === "ORG-001" || orgEmail.includes("demo") || orgEmail.includes("mangrove") || !orgId) && (!p.organizationId || p.organizationId === "ORG-001")) {
-        return true;
-      }
-      return false;
-    });
-  }, [projectsList, currentUser, isAdmin]);
 
   const filteredProjects = useMemo(() => {
-    return projectsList.filter((project) => {
+    return scopedProjectsList.filter((project) => {
       const matchesSearch =
         project.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
         project.id?.toLowerCase().includes(searchQuery.toLowerCase()) ||

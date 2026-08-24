@@ -119,8 +119,29 @@ export default function Verification() {
   }, []);
 
   // Compute rich verification data for each project
+  
+  // Multi-tenant Organization filter: Organizations only see their own verification statuses
+  const scopedProjectsList = useMemo(() => {
+    const adminSession = localStorage.getItem("blueguard_admin_session");
+    if (adminSession) return projectsList;
+    const orgUser = getCurrentUser();
+    if (!orgUser) return [];
+
+    const orgId = orgUser.id || orgUser.uid;
+    const orgEmail = (orgUser.officialEmail || orgUser.email || "").toLowerCase().trim();
+    const orgName = (orgUser.organizationName || orgUser.name || "").toLowerCase().trim();
+
+    return scopedProjectsList.filter((p) => {
+      if (p.organizationId && (p.organizationId === orgId || p.organizationId === orgUser.uid)) return true;
+      if (p.organizationEmail && orgEmail && p.organizationEmail.toLowerCase().trim() === orgEmail) return true;
+      if (p.organizationName && orgName && p.organizationName.toLowerCase().trim() === orgName) return true;
+      if (p.owner && (p.owner === orgId || p.owner === orgUser.uid)) return true;
+      return false;
+    });
+  }, [projectsList]);
+
   const enrichedProjects = useMemo(() => {
-    return projectsList.map((project, index) => {
+    return scopedProjectsList.map((project, index) => {
       const adminData = adminStatuses[project.id] || {};
       const projEvidence = evidenceList.filter((e) => e.projectId === project.id);
       const projVerif = verificationList.find((v) => v.projectId === project.id);
@@ -174,7 +195,7 @@ export default function Verification() {
         verifiedAt,
       };
     });
-  }, [projectsList, evidenceList, verificationList, adminStatuses]);
+  }, [scopedProjectsList, evidenceList, verificationList, adminStatuses]);
 
   // Overall metrics summary
   const metrics = useMemo(() => {
