@@ -1,3 +1,4 @@
+import logoTransparent from "../assets/logo_transparent.png";
 import { useState } from "react";
 import { NavLink, Outlet, useNavigate } from "react-router-dom";
 import {
@@ -95,17 +96,21 @@ export default function Layout() {
         <div className="flex h-full flex-col justify-between">
           {/* Logo & Brand Header */}
           <div>
-            <div className="border-b border-white/10 px-6 py-6">
-              <div className="flex items-center gap-3">
-                <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-[#12545A] text-[#3F7D5C] shadow-md border border-white/15">
-                  <Leaf size={22} className="text-[#5FBF8C]" />
+            <div className="border-b border-white/10 px-6 py-5">
+              <div className="flex items-center gap-3 animate-slide-in-logo">
+                <div className="relative flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-[#12545A] to-[#071C21] p-1.5 shadow-lg border border-white/20 hover:scale-105 hover:border-emerald-400/50 transition-all duration-300">
+                  <img
+                    src={logoTransparent}
+                    alt="BlueGuard Emblem"
+                    className="h-full w-full object-contain filter drop-shadow-[0_2px_4px_rgba(0,0,0,0.5)]"
+                  />
                 </div>
-                <div>
-                  <h1 className="font-serif text-xl font-bold tracking-tight text-white">
-                    BlueGuard
+                <div className="min-w-0">
+                  <h1 className="font-serif text-xl font-bold tracking-tight text-white flex items-center gap-1.5">
+                    <span>BlueGuard</span>
                   </h1>
-                  <p className="text-[10px] font-bold uppercase tracking-wider text-[#E7DEC7]">
-                    {isAdmin ? "Admin & Auditor Portal" : "Organization Portal"}
+                  <p className="text-[10px] font-bold uppercase tracking-wider text-[#E7DEC7] truncate">
+                    {isAdmin ? "Admin & Auditor Suite" : "Organization Portal"}
                   </p>
                 </div>
               </div>
