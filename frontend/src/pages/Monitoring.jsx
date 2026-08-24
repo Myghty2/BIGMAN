@@ -1,6 +1,6 @@
 import { getScopedProjects } from "../services/scopeService";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { useSearchParams } from "react-router-dom";
+import { useSearchParams, Link } from "react-router-dom";
 import {
   Activity,
   AlertTriangle,
@@ -144,17 +144,23 @@ export default function Monitoring() {
 
   const queryProject = searchParams.get("project");
   const [selectedProject, setSelectedProject] = useState(
-    queryProject && projectsList.some((p) => p.id === queryProject)
+    queryProject && organizationProjects.some((p) => p.id === queryProject)
       ? queryProject
-      : projectsList[0]?.id || "BG-001"
+      : organizationProjects[0]?.id || ""
   );
 
   useEffect(() => {
-    const qp = searchParams.get("project");
-    if (qp && projectsList.some((p) => p.id === qp)) {
-      setSelectedProject(qp);
+    if (organizationProjects.length > 0) {
+      const qp = searchParams.get("project");
+      if (qp && organizationProjects.some((p) => p.id === qp)) {
+        setSelectedProject(qp);
+      } else if (!organizationProjects.some((p) => p.id === selectedProject)) {
+        setSelectedProject(organizationProjects[0]?.id || "");
+      }
+    } else {
+      setSelectedProject("");
     }
-  }, [searchParams, projectsList]);
+  }, [searchParams, organizationProjects]);
   const [mapMode, setMapMode] = useState("satellite");
   const [cursorCoordinates, setCursorCoordinates] = useState(null);
   const [showBoundary, setShowBoundary] = useState(true);
@@ -190,8 +196,8 @@ export default function Monitoring() {
   const satelliteRequestRef = useRef(0);
 
   const project = useMemo(() => {
-    return projectsList.find((p) => p.id === selectedProject) || projectsList[0] || seedProjects[0];
-  }, [projectsList, selectedProject]);
+    return organizationProjects.find((p) => p.id === selectedProject) || organizationProjects[0] || null;
+  }, [organizationProjects, selectedProject]);
 
   const coordinates = useMemo(() => getCoords(project), [project]);
   const boundary = useMemo(() => createBoundary(coordinates), [coordinates]);
@@ -374,6 +380,45 @@ export default function Monitoring() {
     setLastRefreshed(new Date());
     loadSatelliteImage({ force: true });
   };
+
+    // If organization has no registered sites yet, render friendly empty state
+  if (organizationProjects.length === 0) {
+    return (
+      <div className="min-h-full bg-slate-50 p-6 lg:p-8">
+        <header className="relative overflow-hidden rounded-3xl border border-white/10 bg-gradient-to-br from-deep-navy via-brand-teal to-seagrass p-6 shadow-xl lg:p-8">
+          <div className="inline-flex items-center gap-2.5 rounded-full border border-sand/30 bg-sand/15 px-4 py-2 text-xs sm:text-sm font-extrabold tracking-wider text-sand backdrop-blur-md">
+            <Sprout size={18} className="text-emerald-300" />
+            <span>SATELLITE & SENSOR TELEMETRY</span>
+          </div>
+          <h1 className="dashboard-display mt-3 text-3xl sm:text-4xl lg:text-5xl font-black tracking-tight text-white">
+            Mangrove Monitoring Hub
+          </h1>
+          <p className="mt-2.5 text-sm sm:text-base font-medium text-slate-100 max-w-2xl">
+            Live Sentinel-2 L2A orbital passes, multi-spectral NDVI canopy tracking, and tidal inundation logs.
+          </p>
+        </header>
+
+        <div className="mt-8 rounded-3xl border border-dashed border-slate-300 bg-white p-12 text-center shadow-sm max-w-2xl mx-auto">
+          <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-teal-50 border border-teal-200 text-brand-teal mb-4">
+            <Satellite size={32} />
+          </div>
+          <h2 className="text-xl font-bold text-slate-900">No Registered Sites to Monitor</h2>
+          <p className="mt-2 text-sm text-slate-600 leading-relaxed">
+            Your organization has not registered any restoration projects yet. You can only view satellite telemetry for projects registered under your organization.
+          </p>
+          <div className="mt-6">
+            <Link
+              to="/projects?new=true"
+              className="inline-flex items-center gap-2 rounded-2xl bg-brand-teal px-6 py-3.5 text-sm font-bold text-white shadow-lg hover:bg-deep-navy transition"
+            >
+              <Plus size={18} />
+              <span>Register Your First Restoration Site</span>
+            </Link>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-full bg-slate-50 p-6 lg:p-8">
