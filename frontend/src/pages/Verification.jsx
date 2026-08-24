@@ -1,3 +1,4 @@
+import { getScopedProjects } from "../services/scopeService";
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import {
@@ -122,23 +123,8 @@ export default function Verification() {
   
   // Multi-tenant Organization filter: Organizations only see their own verification statuses
   const scopedProjectsList = useMemo(() => {
-    const adminSession = localStorage.getItem("blueguard_admin_session");
-    if (adminSession) return projectsList;
-    const orgUser = getCurrentUser();
-    if (!orgUser) return [];
-
-    const orgId = orgUser.id || orgUser.uid;
-    const orgEmail = (orgUser.officialEmail || orgUser.email || "").toLowerCase().trim();
-    const orgName = (orgUser.organizationName || orgUser.name || "").toLowerCase().trim();
-
-    return projectsList.filter((p) => {
-      if (p.organizationId && (p.organizationId === orgId || p.organizationId === orgUser.uid)) return true;
-      if (p.organizationEmail && orgEmail && p.organizationEmail.toLowerCase().trim() === orgEmail) return true;
-      if (p.organizationName && orgName && p.organizationName.toLowerCase().trim() === orgName) return true;
-      if (p.owner && (p.owner === orgId || p.owner === orgUser.uid)) return true;
-      return false;
-    });
-  }, [projectsList]);
+    return getScopedProjects(projectsList);
+  }, [projectsList, currentUser]);
 
   const enrichedProjects = useMemo(() => {
     return scopedProjectsList.map((project, index) => {

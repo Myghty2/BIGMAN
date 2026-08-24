@@ -1,3 +1,4 @@
+import { getScopedProjects } from "../services/scopeService";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Link, useParams, useSearchParams } from "react-router-dom";
 import greenWater from "../assets/greenWater.jpg";
@@ -126,20 +127,8 @@ export default function Projects() {
 
   // Multi-tenant Organization project filter: Organizations can ONLY see their own projects
   const scopedProjectsList = useMemo(() => {
-    if (isAdmin) return projectsList;
-    if (!currentUser) return [];
-    const orgId = currentUser.id || currentUser.uid;
-    const orgEmail = (currentUser.officialEmail || currentUser.email || "").toLowerCase().trim();
-    const orgName = (currentUser.organizationName || currentUser.name || "").toLowerCase().trim();
-
-    return projectsList.filter((p) => {
-      if (p.organizationId && (p.organizationId === orgId || p.organizationId === currentUser.uid)) return true;
-      if (p.organizationEmail && orgEmail && p.organizationEmail.toLowerCase().trim() === orgEmail) return true;
-      if (p.organizationName && orgName && p.organizationName.toLowerCase().trim() === orgName) return true;
-      if (p.owner && (p.owner === orgId || p.owner === currentUser.uid)) return true;
-      return false;
-    });
-  }, [projectsList, currentUser, isAdmin]);
+    return getScopedProjects(projectsList);
+  }, [projectsList, currentUser]);
 
   // Currently inspected project
   const selectedProject = useMemo(() => {

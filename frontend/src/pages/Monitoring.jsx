@@ -1,3 +1,4 @@
+import { getScopedProjects } from "../services/scopeService";
 import { getCurrentUser } from "../services/authService";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useSearchParams } from "react-router-dom";
@@ -198,26 +199,7 @@ export default function Monitoring() {
   const [projectsList, setProjectsList] = useState(() => loadProjects());
 
   // Scope project selector to the logged-in organization
-  const organizationProjects = useMemo(() => {
-    const adminSession = localStorage.getItem("blueguard_admin_session");
-    if (adminSession) return projectsList;
-    const orgUser = getCurrentUser();
-    const orgId = orgUser?.id || orgUser?.uid;
-    const orgEmail = (orgUser?.officialEmail || orgUser?.email || "").toLowerCase();
-    const orgName = (orgUser?.organizationName || orgUser?.name || "").toLowerCase();
-
-    const filtered = projectsList.filter((p) => {
-      if (p.organizationId && (p.organizationId === orgId || p.organizationId === orgUser?.uid)) return true;
-      if (p.organizationEmail && p.organizationEmail.toLowerCase() === orgEmail) return true;
-      if (p.organizationName && p.organizationName.toLowerCase() === orgName) return true;
-      if ((orgId === "ORG-001" || orgEmail.includes("demo") || orgEmail.includes("mangrove") || !orgId) && (!p.organizationId || p.organizationId === "ORG-001")) {
-        return true;
-      }
-      return false;
-    });
-
-    return filtered.length > 0 ? filtered : projectsList;
-  }, [projectsList]);
+  const organizationProjects = useMemo(() => getScopedProjects(projectsList), [projectsList]);
 
   const [searchParams] = useSearchParams();
   const projectsList = loadProjects();

@@ -1,3 +1,4 @@
+import { getScopedProjects } from "../services/scopeService";
 import { useEffect, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import greenWater from "../assets/greenWater.jpg";
@@ -139,7 +140,9 @@ export default function Evidence() {
       description: description.trim() || "Field evidence submitted for MRV verification.",
       capturedAt: new Date().toISOString(),
       gpsCoordinates: selectedProjectData?.coordinates || [21.9497, 89.1833],
-      uploadedBy: "Mangrove NGO Foundation",
+      uploadedBy: currentUser?.organizationName || currentUser?.name || "Restoration Partner",
+      organizationId: currentUser?.id || currentUser?.uid || "ORG-001",
+      organizationEmail: currentUser?.officialEmail || currentUser?.email || "",
       status: "Pending Verification",
     };
 
