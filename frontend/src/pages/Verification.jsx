@@ -131,7 +131,7 @@ export default function Verification() {
     const orgEmail = (orgUser.officialEmail || orgUser.email || "").toLowerCase().trim();
     const orgName = (orgUser.organizationName || orgUser.name || "").toLowerCase().trim();
 
-    return scopedProjectsList.filter((p) => {
+    return projectsList.filter((p) => {
       if (p.organizationId && (p.organizationId === orgId || p.organizationId === orgUser.uid)) return true;
       if (p.organizationEmail && orgEmail && p.organizationEmail.toLowerCase().trim() === orgEmail) return true;
       if (p.organizationName && orgName && p.organizationName.toLowerCase().trim() === orgName) return true;

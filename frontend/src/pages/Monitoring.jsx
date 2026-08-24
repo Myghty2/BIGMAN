@@ -193,6 +193,8 @@ function MapController({ coordinates, onZoomIn, onZoomOut, onLocate, onFullscree
 }
 
 export default function Monitoring() {
+  const [searchParams] = useSearchParams();
+  const [projectsList, setProjectsList] = useState(() => loadProjects());
 
   // Scope project selector to the logged-in organization
   const organizationProjects = useMemo(() => {
